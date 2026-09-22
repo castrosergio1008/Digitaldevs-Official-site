@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Menu, X, MessageCircle } from 'lucide-react'
+import { Menu, X, MessageCircle, BadgeCheck } from 'lucide-react'
 import { nav, site } from '@/lib/site'
 import ThemeToggle from './ThemeToggle'
 
@@ -36,6 +36,10 @@ export default function Header() {
           />
           <span className="text-lg font-bold tracking-tight text-fg">
             Digital<span className="text-primary">devs</span>
+          </span>
+          <span className="hidden items-center gap-1 rounded-full border border-edge bg-soft px-2 py-0.5 text-[10px] font-semibold text-muted sm:inline-flex">
+            <BadgeCheck className="h-3 w-3 text-accent" />
+            Sitio oficial
           </span>
         </Link>
 

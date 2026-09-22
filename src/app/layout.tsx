@@ -9,7 +9,7 @@ const jetbrains = JetBrains_Mono({ subsets: ['latin'], variable: '--font-jetbrai
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://digitaldevs.co'),
-  title: 'Digitaldevs — Software a la medida | Desarrollo web en LATAM',
+  title: 'Digitaldevs | Sitio oficial — Software a la medida en LATAM',
   description:
     'Sitios web corporativos, tiendas en línea y aplicaciones a la medida. Del diseño al despliegue en producción. Desarrollo web full stack remoto desde Colombia.',
   keywords: [
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
   authors: [{ name: 'Digitaldevs' }],
   creator: 'Digitaldevs',
   openGraph: {
-    title: 'Digitaldevs — Software a la medida',
+    title: 'Digitaldevs | Sitio oficial',
     description:
       'Sitios web, tiendas en línea y aplicaciones a la medida. Del diseño al despliegue en producción, remoto en toda LATAM.',
     url: '/',
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Digitaldevs — Software a la medida',
+    title: 'Digitaldevs | Sitio oficial',
     description:
       'Sitios web, tiendas en línea y aplicaciones a la medida. Del diseño al despliegue en producción.',
     images: ['/og.png'],
@@ -57,10 +57,15 @@ const jsonLdOrganization = {
   '@type': 'Organization',
   '@id': 'https://digitaldevs.co/#organization',
   name: site.name,
+  alternateName: 'Digitaldevs Sitio Oficial',
   description:
     'Empresa de desarrollo de software a la medida: sitios web, tiendas en línea y aplicaciones web.',
   email: site.email,
   url: 'https://digitaldevs.co',
+  logo: {
+    '@type': 'ImageObject',
+    url: 'https://digitaldevs.co/logo.png',
+  },
   areaServed: 'LATAM',
   address: { '@type': 'PostalAddress', addressLocality: 'Aguachica', addressRegion: 'Cesar', addressCountry: 'CO' },
   sameAs: [site.github],
@@ -80,11 +85,12 @@ const jsonLdWebSite = {
   '@context': 'https://schema.org',
   '@type': 'WebSite',
   name: site.name,
+  alternateName: 'Sitio oficial de Digitaldevs',
   url: 'https://digitaldevs.co',
+  inLanguage: 'es-CO',
   description:
     'Desarrollo de software a la medida: sitios web corporativos, tiendas en línea, aplicaciones web y MVPs.',
-  inLanguage: 'es-CO',
-  author: { '@id': 'https://digitaldevs.co/#organization' },
+  publisher: { '@id': 'https://digitaldevs.co/#organization' },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

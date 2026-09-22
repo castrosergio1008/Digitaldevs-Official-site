@@ -68,7 +68,7 @@ export default function Footer() {
 
         <div className="mt-12 flex flex-col items-center justify-between gap-3 border-t border-edge pt-6 text-xs text-muted sm:flex-row">
           <span>
-            © {site.year} {site.name} · Todos los derechos reservados.
+            © {site.year} {site.name} · Sitio oficial · Todos los derechos reservados.
           </span>
           <span className="font-mono">software a la medida · remoto LATAM</span>
         </div>
