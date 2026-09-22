@@ -1,26 +1,163 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
+/* ===== Sistema de tema: dark-first por defecto, toggle a claro ===== */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #07091f;
+  --soft: #0b0f2b;
+  --surface: #10163a;
+  --surface2: #181f4b;
+  --edge: rgba(148, 180, 255, 0.14);
+  --fg: #eef2ff;
+  --muted: #9fb0d8;
+  --primary: #0066ff;
+  --accent: #00ccff;
+  --cta: #ff6600;
+  --coral: #ff3366;
+  --code: #0a0f2e;
+  --glass: rgba(13, 20, 51, 0.66);
+  --glow: 0 0 80px rgba(0, 102, 255, 0.35), 0 0 160px rgba(0, 204, 255, 0.14);
+}
+
+[data-theme='light'] {
+  --background: #f7f8fc;
+  --soft: #ffffff;
+  --surface: #ffffff;
+  --surface2: #eef1f9;
+  --edge: rgba(7, 9, 31, 0.12);
+  --fg: #0b1231;
+  --muted: #4a5a86;
+  --primary: #0066ff;
+  --accent: #0089c7;
+  --cta: #f05a04;
+  --coral: #e12651;
+  --code: #0b1231;
+  --glass: rgba(255, 255, 255, 0.78);
+  --glow: 0 0 80px rgba(0, 102, 255, 0.18), 0 0 160px rgba(0, 204, 255, 0.08);
 }
 
 @theme inline {
   --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-soft: var(--soft);
+  --color-surface: var(--surface);
+  --color-surface2: var(--surface2);
+  --color-edge: var(--edge);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-primary: var(--primary);
+  --color-accent: var(--accent);
+  --color-cta: var(--cta);
+  --color-coral: var(--coral);
+  --font-sans: var(--font-inter), Roboto, system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
+  color-scheme: dark;
+}
+
+[data-theme='light'] {
+  color-scheme: light;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--background);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: rgba(0, 102, 255, 0.35);
+  color: #ffffff;
+}
+
+/* ===== Animaciones y micro-interacciones (quirúrgicas, con reduced-motion) ===== */
+@keyframes blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+@keyframes floaty {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes pulse-soft {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 0.9; }
+}
+
+.cursor-blink {
+  animation: blink 1.1s step-end infinite;
+}
+
+.animate-floaty {
+  animation: floaty 7s ease-in-out infinite;
+}
+
+.animate-pulse-soft {
+  animation: pulse-soft 6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .cursor-blink, .animate-floaty, .animate-pulse-soft {
+    animation: none;
+  }
+}
+
+/* Scroll reveal */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.7s ease-out, transform 0.7s ease-out;
+}
+
+.reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* Texto con gradiente de marca */
+.text-gradient {
+  background: linear-gradient(95deg, #0066ff 0%, #00ccff 55%, #9fe0ff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+[data-theme='light'] .text-gradient {
+  background: linear-gradient(95deg, #0055e0 0%, #0089c7 60%, #0066ff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Vidrio esmerilado */
+.glass {
+  background: var(--glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--edge);
+}
+
+[data-theme='light'] .glass {
+  background: var(--glass);
+}
+
+/* Rejilla de fondo sutil en el hero */
+.grid-lines {
+  background-image:
+    linear-gradient(to right, rgba(0, 102, 255, 0.07) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 102, 255, 0.07) 1px, transparent 1px);
+  background-size: 56px 56px;
 }
