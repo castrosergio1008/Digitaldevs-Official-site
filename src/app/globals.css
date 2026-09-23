@@ -113,7 +113,6 @@ body {
   transition:
     scale 120ms ease-out,
     rotate 140ms ease-out,
-    border-color 150ms ease-out,
     box-shadow 150ms ease-out;
 }
 
@@ -133,9 +132,7 @@ body {
     animation: none;
   }
   .logo-visual {
-    transition:
-      border-color 150ms ease-out,
-      box-shadow 150ms ease-out;
+    transition: box-shadow 150ms ease-out;
     scale: 1 !important;
     rotate: 0deg !important;
   }

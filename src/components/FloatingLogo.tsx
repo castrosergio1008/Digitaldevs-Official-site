@@ -117,10 +117,10 @@ export default function FloatingLogo() {
   }
 
   const visualState = dragging
-    ? 'scale-95 border-primary/60 shadow-xl shadow-black/40'
+    ? 'scale-95 shadow-xl shadow-black/40'
     : settling
-      ? 'animate-logo-settle border-primary/40 shadow-lg shadow-primary/15'
-      : 'hover:scale-110 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/20'
+      ? 'animate-logo-settle shadow-lg shadow-primary/15'
+      : 'hover:scale-110 hover:shadow-lg hover:shadow-primary/20'
 
   return (
     <div
@@ -138,7 +138,7 @@ export default function FloatingLogo() {
           role="img"
           aria-label="Isotipo de DigitalDevs, arrastrable"
           title="Arrástrame"
-          className={`logo-visual relative overflow-hidden rounded-2xl border border-edge bg-soft opacity-90 ${visualState}`}
+          className={`logo-visual relative overflow-hidden rounded-2xl bg-soft opacity-90 ${visualState}`}
           style={{ rotate: `${tilt}deg` }}
         >
           <Image
