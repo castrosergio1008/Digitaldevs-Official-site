@@ -10,12 +10,36 @@ import ThemeToggle from './ThemeToggle'
 export default function Header() {
   const [open, setOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const [active, setActive] = useState('')
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12)
     onScroll()
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  useEffect(() => {
+    const sections = nav
+      .map((item) => document.getElementById(item.href.slice(1)))
+      .filter((el): el is HTMLElement => el !== null)
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const hash = `#${entry.target.id}`
+          if (entry.isIntersecting) {
+            setActive(hash)
+          } else {
+            setActive((prev) => (prev === hash ? '' : prev))
+          }
+        })
+      },
+      { rootMargin: '-45% 0px -50% 0px' }
+    )
+
+    sections.forEach((s) => observer.observe(s))
+    return () => observer.disconnect()
   }, [])
 
   return (
@@ -43,12 +67,15 @@ export default function Header() {
           </span>
         </Link>
 
-        <nav className="hidden items-center gap-1 lg:flex">
+        <nav aria-label="Menú principal" className="hidden items-center gap-1 lg:flex">
           {nav.map((item) => (
             <a
               key={item.href}
               href={item.href}
-              className="rounded-lg px-3 py-2 text-sm font-medium text-muted transition-colors hover:bg-soft hover:text-fg"
+              aria-current={active === item.href ? 'location' : undefined}
+              className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-soft hover:text-fg ${
+                active === item.href ? 'font-semibold text-fg' : 'text-muted'
+              }`}
             >
               {item.label}
             </a>
@@ -68,7 +95,9 @@ export default function Header() {
           </a>
           <button
             onClick={() => setOpen((v) => !v)}
-            aria-label="Abrir menú"
+            aria-expanded={open}
+            aria-controls="mobile-nav"
+            aria-label={open ? 'Cerrar menú' : 'Abrir menú'}
             className="flex h-9 w-9 items-center justify-center rounded-lg border border-edge bg-soft text-muted lg:hidden"
           >
             {open ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
@@ -76,9 +105,12 @@ export default function Header() {
         </div>
       </div>
 
-      {open && (
-        <div className="border-t border-edge bg-background/95 px-4 pb-5 pt-2 backdrop-blur-xl lg:hidden">
-          <nav className="flex flex-col gap-1">
+      <div
+        className={`border-t border-edge bg-background/95 px-4 pb-5 pt-2 backdrop-blur-xl lg:hidden ${
+          open ? '' : 'hidden'
+        }`}
+      >
+        <nav id="mobile-nav" aria-label="Menú móvil" className="flex flex-col gap-1">
             {nav.map((item) => (
               <a
                 key={item.href}
@@ -100,7 +132,6 @@ export default function Header() {
             </a>
           </nav>
         </div>
-      )}
     </header>
   )
 }

@@ -28,6 +28,7 @@ export default function FAQ() {
                   <button
                     onClick={() => setOpenIdx(open ? null : i)}
                     aria-expanded={open}
+                    aria-controls={`faq-panel-${i}`}
                     className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left"
                   >
                     <h3 className="text-sm font-semibold text-fg sm:text-base">{f.q}</h3>
@@ -36,6 +37,7 @@ export default function FAQ() {
                     />
                   </button>
                   <div
+                    id={`faq-panel-${i}`}
                     className={`grid transition-all duration-200 ease-out ${open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}
                   >
                     <div className="overflow-hidden">
