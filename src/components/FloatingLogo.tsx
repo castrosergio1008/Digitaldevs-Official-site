@@ -142,7 +142,7 @@ export default function FloatingLogo() {
           style={{ rotate: `${tilt}deg` }}
         >
           <Image
-            src="/isotipo.png"
+            src="/logo.png"
             alt=""
             width={72}
             height={72}
