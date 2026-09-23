@@ -1,6 +1,28 @@
 export const site = {
   name: 'Digitaldevs',
   tagline: 'Hacemos realidad tus ideas · Software a la medida · Remoto LATAM',
+  url: 'https://digitaldevs.co',
+  locale: 'es_CO',
+  language: 'es',
+  title: 'Digitaldevs | Sitio oficial — Software a la medida en LATAM',
+  description:
+    'Sitios web corporativos, tiendas en línea y aplicaciones a la medida. Del diseño al despliegue en producción. Desarrollo web full stack remoto desde Colombia.',
+  keywords: [
+    'desarrollo web',
+    'software a la medida',
+    'desarrollador full stack',
+    'páginas web',
+    'tiendas en línea',
+    'e-commerce',
+    'aplicaciones web',
+    'Colombia',
+    'Latinoamérica',
+    'Digitaldevs',
+  ] as string[],
+  ogImage: '/og.png',
+  ogTitle: 'Digitaldevs | Sitio oficial',
+  ogDescription:
+    'Sitios web, tiendas en línea y aplicaciones a la medida. Del diseño al despliegue en producción, remoto en toda LATAM.',
   email: 'digitaldevscolombia@gmail.com',
   whatsapp: '+57 311 360 9710',
   whatsappBase: 'https://wa.me/573113609710',

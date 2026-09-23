@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Inter, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
 import { site } from '@/lib/site'
@@ -8,41 +8,30 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'sw
 const jetbrains = JetBrains_Mono({ subsets: ['latin'], variable: '--font-jetbrains', display: 'swap' })
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://digitaldevs.co'),
-  title: 'Digitaldevs | Sitio oficial — Software a la medida en LATAM',
-  description:
-    'Sitios web corporativos, tiendas en línea y aplicaciones a la medida. Del diseño al despliegue en producción. Desarrollo web full stack remoto desde Colombia.',
-  keywords: [
-    'desarrollo web',
-    'software a la medida',
-    'desarrollador full stack',
-    'páginas web',
-    'tiendas en línea',
-    'e-commerce',
-    'aplicaciones web',
-    'Colombia',
-    'Latinoamérica',
-    'Digitaldevs',
-  ],
+  metadataBase: new URL(site.url),
+  title: site.title,
+  description: site.description,
+  keywords: site.keywords,
   applicationName: site.name,
   authors: [{ name: 'Digitaldevs' }],
   creator: 'Digitaldevs',
+  alternates: { canonical: '/' },
+  robots: { index: true, follow: true },
+  formatDetection: { email: false, address: false, telephone: false },
   openGraph: {
-    title: 'Digitaldevs | Sitio oficial',
-    description:
-      'Sitios web, tiendas en línea y aplicaciones a la medida. Del diseño al despliegue en producción, remoto en toda LATAM.',
+    title: site.ogTitle,
+    description: site.ogDescription,
     url: '/',
     siteName: site.name,
-    locale: 'es_CO',
+    locale: site.locale,
     type: 'website',
-    images: [{ url: '/og.png', width: 1200, height: 630, alt: 'Digitaldevs' }],
+    images: [{ url: site.ogImage, width: 1200, height: 630, alt: 'Digitaldevs' }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Digitaldevs | Sitio oficial',
-    description:
-      'Sitios web, tiendas en línea y aplicaciones a la medida. Del diseño al despliegue en producción.',
-    images: ['/og.png'],
+    title: site.ogTitle,
+    description: site.ogDescription,
+    images: [site.ogImage],
   },
   icons: {
     icon: '/logo.png',
@@ -50,21 +39,29 @@ export const metadata: Metadata = {
   },
 }
 
+export const viewport: Viewport = {
+  themeColor: [
+    { media: '(prefers-color-scheme: dark)', color: '#07091f' },
+    { media: '(prefers-color-scheme: light)', color: '#f7f8fc' },
+  ],
+  colorScheme: 'dark light',
+}
+
 const themeScript = `(function(){try{var t=localStorage.getItem('theme');var d=t?t:'dark';document.documentElement.setAttribute('data-theme',d);}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();`
 
 const jsonLdOrganization = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
-  '@id': 'https://digitaldevs.co/#organization',
+  '@id': `${site.url}/#organization`,
   name: site.name,
   alternateName: 'Digitaldevs Sitio Oficial',
   description:
     'Empresa de desarrollo de software a la medida: sitios web, tiendas en línea y aplicaciones web.',
   email: site.email,
-  url: 'https://digitaldevs.co',
+  url: site.url,
   logo: {
     '@type': 'ImageObject',
-    url: 'https://digitaldevs.co/logo.png',
+    url: `${site.url}/logo.png`,
   },
   areaServed: 'LATAM',
   address: { '@type': 'PostalAddress', addressLocality: 'Aguachica', addressRegion: 'Cesar', addressCountry: 'CO' },
@@ -85,20 +82,23 @@ const jsonLdWebSite = {
   '@type': 'WebSite',
   name: site.name,
   alternateName: 'Sitio oficial de Digitaldevs',
-  url: 'https://digitaldevs.co',
-  inLanguage: 'es-CO',
+  url: site.url,
+  inLanguage: site.locale.replace('_', '-'),
   description:
     'Desarrollo de software a la medida: sitios web corporativos, tiendas en línea, aplicaciones web y MVPs.',
-  publisher: { '@id': 'https://digitaldevs.co/#organization' },
+  publisher: { '@id': `${site.url}/#organization` },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es" data-theme="dark" className={`${inter.variable} ${jetbrains.variable}`} suppressHydrationWarning>
+    <html lang={site.language} data-theme="dark" className={`${inter.variable} ${jetbrains.variable}`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body className="min-h-screen bg-background text-fg font-sans antialiased">
+        <a href="#inicio" className="skip-link">
+          Saltar al contenido
+        </a>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdOrganization) }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdWebSite) }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdFaq) }} />
