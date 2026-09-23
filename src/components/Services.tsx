@@ -1,8 +1,8 @@
-import { Globe, ShoppingCart, LayoutDashboard, Rocket, Smartphone, LifeBuoy, Check } from 'lucide-react'
-import { services } from '@/lib/content'
+import { Globe, ShoppingCart, LayoutDashboard, Rocket, Smartphone, LifeBuoy, Check, type LucideIcon } from 'lucide-react'
+import { services, type ServiceKey } from '@/lib/content'
 import Reveal from './Reveal'
 
-const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+const ICONS: Record<ServiceKey, LucideIcon> = {
   web: Globe,
   ecommerce: ShoppingCart,
   apps: LayoutDashboard,

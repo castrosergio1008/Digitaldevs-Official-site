@@ -1,8 +1,8 @@
 import { ExternalLink } from 'lucide-react'
-import { projects } from '@/lib/content'
+import { projects, type ProjectKey } from '@/lib/content'
 import Reveal from './Reveal'
 
-const HINTS: Record<string, [string, string]> = {
+const HINTS: Record<ProjectKey, [string, string]> = {
   saasify: ['from-primary to-accent', '✦ SaaSify'],
   taskmanager: ['from-cta to-coral', 'GET /api/tasks'],
   dashboard: ['from-accent to-emerald-400', '▲ Dashboard'],

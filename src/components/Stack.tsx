@@ -1,8 +1,8 @@
-import { Code2, Server, Database, Rocket } from 'lucide-react'
-import { stack } from '@/lib/content'
+import { Code2, Server, Database, Rocket, type LucideIcon } from 'lucide-react'
+import { stack, type StackIconKey } from '@/lib/content'
 import Reveal from './Reveal'
 
-const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+const ICONS: Record<StackIconKey, LucideIcon> = {
   code: Code2,
   server: Server,
   database: Database,

@@ -1,5 +1,7 @@
+export type ServiceKey = 'web' | 'ecommerce' | 'apps' | 'mvp' | 'pwa' | 'support'
+
 export type Service = {
-  key: string
+  key: ServiceKey
   title: string
   description: string
   points: string[]
@@ -44,7 +46,9 @@ export const services: Service[] = [
   },
 ]
 
-export type StackGroup = { name: string; icon: string; items: string[] }
+export type StackIconKey = 'code' | 'server' | 'database' | 'rocket'
+
+export type StackGroup = { name: string; icon: StackIconKey; items: string[] }
 
 export const stack: StackGroup[] = [
   { name: 'Frontend', icon: 'code', items: ['React', 'Next.js', 'Tailwind CSS', 'Vite', 'TypeScript', 'HTML5', 'CSS3'] },
@@ -62,8 +66,10 @@ export const process: ProcessStep[] = [
   { step: '04', title: 'Despliegue y soporte', description: 'Publicamos en producción, configuramos dominio y seguridad, y te acompañamos en el día a día.' },
 ]
 
+export type ProjectKey = 'saasify' | 'taskmanager' | 'dashboard' | 'portfolio'
+
 export type Project = {
-  key: string
+  key: ProjectKey
   title: string
   tag: string
   type: string
