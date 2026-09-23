@@ -13,26 +13,24 @@ export default function Hero() {
 
       <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-4 pb-20 pt-16 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:pb-28 lg:pt-24">
         <div>
-          <Reveal>
+          {/* Above-the-fold content is painted immediately (no Reveal) to protect LCP.
+              The only motion is a CSS-only fade-in that is disabled under reduced motion. */}
+          <div className="animate-hero-fade">
             <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-edge bg-soft px-3 py-1.5 text-xs font-medium text-muted">
               <span className="h-2 w-2 rounded-full bg-emerald-400" />
               Disponible para nuevos proyectos · Remoto LATAM
             </div>
-          </Reveal>
 
-          <Reveal delay={80}>
             <h1 className="text-4xl font-bold leading-[1.06] tracking-tight sm:text-5xl lg:text-6xl">
               Hacemos realidad{' '}
               <span className="text-gradient">tus ideas</span>
             </h1>
-          </Reveal>
 
-          <Reveal delay={160}>
             <p className="mt-6 max-w-xl text-base leading-relaxed text-muted sm:text-lg">
               Sitios web corporativos, tiendas en línea y aplicaciones a la medida — del diseño al
               despliegue en producción. Tecnología moderna, comunicación clara y entregas confiables.
             </p>
-          </Reveal>
+          </div>
 
           <Reveal delay={240}>
             <div className="mt-8 flex flex-wrap items-center gap-3">
