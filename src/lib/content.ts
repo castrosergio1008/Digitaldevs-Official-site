@@ -67,6 +67,7 @@ export type Project = {
   title: string
   tag: string
   type: string
+  url: string
   description: string
   tech: string[]
 }
@@ -77,6 +78,7 @@ export const projects: Project[] = [
     title: 'SaaSify',
     tag: 'Landing',
     type: 'Landing page',
+    url: 'https://saasify-landing-mu.vercel.app/',
     description: 'Landing page responsiva optimizada para conversión con hero, features, pricing y testimonios.',
     tech: ['React', 'Tailwind CSS', 'Vite'],
   },
@@ -85,6 +87,7 @@ export const projects: Project[] = [
     title: 'Task Manager API',
     tag: 'Backend',
     type: 'REST API',
+    url: 'https://task-manager-api-tau-roan.vercel.app/',
     description: 'API completa de gestión de tareas con autenticación JWT, CRUD, paginación y documentación Swagger.',
     tech: ['Node.js', 'Express', 'MongoDB', 'JWT', 'Swagger'],
   },
@@ -93,6 +96,7 @@ export const projects: Project[] = [
     title: 'Admin Dashboard',
     tag: 'Dashboard',
     type: 'Panel de administración',
+    url: 'https://dashboard-admin-mu-beige.vercel.app/',
     description: 'Panel con gráficos interactivos de rendimiento, gestión de tareas y diseño completamente responsivo.',
     tech: ['React', 'Recharts', 'Context API'],
   },
@@ -101,6 +105,7 @@ export const projects: Project[] = [
     title: 'Portfolio Personal',
     tag: 'Portfolio',
     type: 'Sitio personal',
+    url: 'https://portafolio-ten-zeta-22.vercel.app/',
     description: 'Sitio portfolio en tema oscuro con skills, sección de proyectos y formulario de contacto. 100% responsive.',
     tech: ['React', 'Tailwind CSS', 'Vite'],
   },

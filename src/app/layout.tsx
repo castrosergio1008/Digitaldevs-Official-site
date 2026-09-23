@@ -68,7 +68,6 @@ const jsonLdOrganization = {
   },
   areaServed: 'LATAM',
   address: { '@type': 'PostalAddress', addressLocality: 'Aguachica', addressRegion: 'Cesar', addressCountry: 'CO' },
-  sameAs: [site.github],
 }
 
 const jsonLdFaq = {

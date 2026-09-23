@@ -1,7 +1,6 @@
 import Image from 'next/image'
 import { Mail, MessageCircle, MapPin } from 'lucide-react'
 import { nav, site } from '@/lib/site'
-import { GitHubIcon } from './icons'
 
 export default function Footer() {
   return (
@@ -25,9 +24,6 @@ export default function Footer() {
               </a>
               <a href={`mailto:${site.email}`} aria-label="Correo" className="flex h-9 w-9 items-center justify-center rounded-lg border border-edge bg-surface text-muted transition-colors hover:border-primary/50 hover:text-fg">
                 <Mail className="h-4 w-4" />
-              </a>
-              <a href={site.github} target="_blank" rel="noreferrer" aria-label="GitHub" className="flex h-9 w-9 items-center justify-center rounded-lg border border-edge bg-surface text-muted transition-colors hover:border-primary/50 hover:text-fg">
-                <GitHubIcon className="h-4 w-4" />
               </a>
             </div>
           </div>

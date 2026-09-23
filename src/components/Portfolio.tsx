@@ -1,6 +1,5 @@
-import { ExternalLink, FolderGit2 } from 'lucide-react'
+import { ExternalLink } from 'lucide-react'
 import { projects } from '@/lib/content'
-import { site } from '@/lib/site'
 import Reveal from './Reveal'
 
 const HINTS: Record<string, [string, string]> = {
@@ -30,7 +29,12 @@ export default function Portfolio() {
             const [grad, hint] = HINTS[p.key]
             return (
               <Reveal key={p.key} delay={(i % 2) * 80}>
-                <div className="group flex h-full flex-col overflow-hidden rounded-2xl border border-edge bg-surface transition-all duration-200 hover:-translate-y-1 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/5">
+                <a
+                  href={p.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="group flex h-full flex-col overflow-hidden rounded-2xl border border-edge bg-surface transition-all duration-200 hover:-translate-y-1 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/5"
+                >
                   <div className={`relative flex h-40 items-center justify-center bg-gradient-to-br ${grad} p-6`}>
                     <div className="absolute inset-x-4 top-3 flex items-center gap-1.5">
                       <span className="h-2.5 w-2.5 rounded-full bg-white/25" />
@@ -63,18 +67,12 @@ export default function Portfolio() {
                         </span>
                       ))}
                     </div>
-                    <a
-                      href={site.github}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-primary transition-colors hover:text-accent"
-                    >
-                      <FolderGit2 className="h-4 w-4" />
-                      Ver repositorio
+                    <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-primary transition-colors group-hover:text-accent">
+                      Ver proyecto en vivo
                       <ExternalLink className="h-3.5 w-3.5" />
-                    </a>
+                    </span>
                   </div>
-                </div>
+                </a>
               </Reveal>
             )
           })}

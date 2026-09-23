@@ -6,8 +6,6 @@ export const site = {
   whatsappBase: 'https://wa.me/573113609710',
   whatsappLink:
     'https://wa.me/573113609710?text=Hola%21%20Los%20contact%C3%A9%20desde%20Google%20Maps.%20Me%20interesa%20informaci%C3%B3n%20sobre%20sus%20servicios%20de%20desarrollo%20web.',
-  github: 'https://github.com/castrosergio1008',
-  githubHandle: 'github.com/castrosergio1008',
   city: 'Aguachica, Colombia',
   year: new Date().getFullYear(),
 } as const

@@ -3,7 +3,6 @@ import { site } from '@/lib/site'
 import Terminal from './Terminal'
 import Reveal from './Reveal'
 import FloatingLogo from './FloatingLogo'
-import { GitHubIcon } from './icons'
 
 export default function Hero() {
   return (
@@ -61,10 +60,6 @@ export default function Hero() {
               <a href={`mailto:${site.email}`} className="inline-flex items-center gap-2 transition-colors hover:text-fg">
                 <Mail className="h-4 w-4 text-primary" />
                 {site.email}
-              </a>
-              <a href={site.github} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 transition-colors hover:text-fg">
-                <GitHubIcon className="h-4 w-4 text-primary" />
-                {site.githubHandle}
               </a>
               <span className="inline-flex items-center gap-2">
                 <MapPin className="h-4 w-4 text-primary" />
