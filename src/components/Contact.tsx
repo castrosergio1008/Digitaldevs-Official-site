@@ -14,7 +14,7 @@ export default function Contact() {
     const text = encodeURIComponent(
       `Hola Digitaldevs! Soy ${form.nombre || 'un interesado'}.${form.telefono ? ` Mi teléfono es ${form.telefono}.` : ''} ${form.mensaje}`
     )
-    window.open(`${site.whatsappLink}?text=${text}`, '_blank', 'noopener')
+    window.open(`${site.whatsappBase}?text=${text}`, '_blank', 'noopener')
     setSent(true)
     setTimeout(() => setSent(false), 6000)
   }
