@@ -1,8 +1,8 @@
-import Image from 'next/image'
 import { ArrowRight, MessageCircle, Mail, MapPin } from 'lucide-react'
 import { site } from '@/lib/site'
 import Terminal from './Terminal'
 import Reveal from './Reveal'
+import FloatingLogo from './FloatingLogo'
 import { GitHubIcon } from './icons'
 
 export default function Hero() {
@@ -76,13 +76,7 @@ export default function Hero() {
 
         <Reveal delay={200} className="relative flex justify-center lg:justify-end">
           <Terminal />
-          <Image
-            src="/isotipo.png"
-            alt=""
-            width={72}
-            height={72}
-            className="absolute -left-2 bottom-10 hidden animate-floaty rounded-2xl border border-edge bg-soft object-cover opacity-90 sm:block"
-          />
+          <FloatingLogo />
         </Reveal>
       </div>
     </section>
