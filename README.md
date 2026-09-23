@@ -15,21 +15,21 @@ Sitio de una página para promocionar **Digitaldevs**, empresa de desarrollo de 
 ```
 src/
   app/
-    layout.tsx      # metadata, JSON-LD, fuentes, script de tema
+    layout.tsx      # metadata, viewport, JSON-LD, fuentes, script de tema, skip-link
     page.tsx        # landing de una página
-    globals.css     # tokens de color dark/light, animaciones
+    globals.css     # tokens de color dark/light, animaciones, skip-link
+    favicon.ico     # favicon
     icon.png        # favicon (isotipo)
-    sitemap.ts      # SEO
-    robots.ts       # SEO
+    sitemap.ts      # SEO — sitemap.xml (usa la URL de site.ts)
+    robots.ts       # SEO — robots.txt (usa la URL de site.ts)
   components/       # Header, Hero, Terminal, TrustBar, Services, Stack,
                     # Process, Portfolio, Pricing, FAQ, Contact, CTA, Footer,
                     # ThemeToggle, Reveal
   lib/
-    site.ts         # datos de contacto de la empresa
+    site.ts         # single source of truth: URL, locale, SEO (title/description/keywords), contacto
     content.ts      # servicios, stack, proceso, portafolio, modelos, FAQ
 public/
   logo.png          # marca (fondo navy) para header/footer
-  isotipo.png       # símbolo con transparencia
   og.png            # imagen para compartir en redes
 ```
 
@@ -45,10 +45,11 @@ npm run lint      # ESLint
 
 ## Personalización rápida
 
-- **Contacto / datos de la empresa**: edita `src/lib/site.ts`.
+- **Contacto / datos de la empresa y SEO**: edita `src/lib/site.ts` (URL, título, descripción,
+  keywords de SEO y datos de contacto viven allí).
 - **Servicios, stack, portafolio, precios y FAQ**: edita `src/lib/content.ts`.
 - **Colores y tema**: edita las variables en `src/app/globals.css`.
-- **Dominio/URL canónica**: reemplaza `https://digitaldevs.co` en `layout.tsx`, `sitemap.ts` y `robots.ts`.
+- **Dominio/URL canónica**: cambia `site.url` en `src/lib/site.ts`; `layout.tsx`, `sitemap.ts` y `robots.ts` lo consumen automáticamente.
 
 ## Despliegue
 
