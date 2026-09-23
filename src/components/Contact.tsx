@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { MessageCircle, Mail, Send, CheckCircle2 } from 'lucide-react'
 import { site } from '@/lib/site'
 import Reveal from './Reveal'
@@ -8,15 +8,27 @@ import Reveal from './Reveal'
 export default function Contact() {
   const [form, setForm] = useState({ nombre: '', telefono: '', mensaje: '' })
   const [sent, setSent] = useState(false)
+  const resetTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(
+    () => () => {
+      if (resetTimer.current) clearTimeout(resetTimer.current)
+    },
+    []
+  )
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault()
     const text = encodeURIComponent(
       `Hola Digitaldevs! Soy ${form.nombre || 'un interesado'}.${form.telefono ? ` Mi teléfono es ${form.telefono}.` : ''} ${form.mensaje}`
     )
-    window.open(`${site.whatsappBase}?text=${text}`, '_blank', 'noopener')
+    const url = `${site.whatsappBase}?text=${text}`
+    // `noopener` makes window.open() always return null, so treat it as the
+    // preferred way to open the chat without risking the current page.
+    window.open(url, '_blank', 'noopener')
     setSent(true)
-    setTimeout(() => setSent(false), 6000)
+    if (resetTimer.current) clearTimeout(resetTimer.current)
+    resetTimer.current = setTimeout(() => setSent(false), 6000)
   }
 
   const field =
@@ -82,6 +94,7 @@ export default function Contact() {
                 <input
                   id="nombre"
                   required
+                  autoComplete="name"
                   value={form.nombre}
                   onChange={(e) => setForm({ ...form, nombre: e.target.value })}
                   placeholder="Tu nombre"
@@ -95,6 +108,8 @@ export default function Contact() {
                 <input
                   id="telefono"
                   type="tel"
+                  inputMode="tel"
+                  autoComplete="tel"
                   value={form.telefono}
                   onChange={(e) => setForm({ ...form, telefono: e.target.value })}
                   placeholder="300 000 0000"
