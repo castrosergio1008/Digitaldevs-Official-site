@@ -40,3 +40,10 @@ export const nav = [
   { href: '#precios', label: 'Inversión' },
   { href: '#faq', label: 'FAQ' },
 ] as const
+
+// Builds a WhatsApp deep link whose message already mentions the service, used
+// by the per-service CTA banner.
+export function serviceWhatsappLink(serviceTitle: string): string {
+  const text = encodeURIComponent(`Hola Digital-devs! Me interesa el servicio "${serviceTitle}". ¿Me cuentan más?`)
+  return `${site.whatsappBase}?text=${text}`
+}

@@ -1,12 +1,14 @@
 import Image from 'next/image'
+import Link from 'next/link'
 import { Mail, MessageCircle, MapPin } from 'lucide-react'
 import { nav, site } from '@/lib/site'
+import { services } from '@/lib/content'
 
 export default function Footer() {
   return (
     <footer className="border-t border-edge bg-soft/60">
       <div className="mx-auto max-w-6xl px-4 pb-10 pt-14 sm:px-6">
-        <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-5">
           <div className="lg:col-span-2">
             <div className="flex items-center gap-3">
               <Image src="/logo.png" alt="Logo Digital-devs" width={40} height={40} loading="lazy" className="h-10 w-10 rounded-lg object-cover" />
@@ -33,9 +35,22 @@ export default function Footer() {
             <ul className="mt-4 space-y-2">
               {nav.map((n) => (
                 <li key={n.href}>
-                  <a href={n.href} className="text-sm text-muted transition-colors hover:text-fg">
+                  <Link href={`/${n.href}`} className="text-sm text-muted transition-colors hover:text-fg">
                     {n.label}
-                  </a>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="text-xs font-bold uppercase tracking-widest text-muted">Servicios</h4>
+            <ul className="mt-4 space-y-2">
+              {services.map((s) => (
+                <li key={s.key}>
+                  <Link href={`/servicios/${s.slug}`} className="text-sm text-muted transition-colors hover:text-fg">
+                    {s.title}
+                  </Link>
                 </li>
               ))}
             </ul>

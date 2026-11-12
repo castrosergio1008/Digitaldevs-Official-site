@@ -3,11 +3,21 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { usePathname } from 'next/navigation'
 import { Menu, X, MessageCircle, BadgeCheck } from 'lucide-react'
 import { nav, site } from '@/lib/site'
 import ThemeToggle from './ThemeToggle'
 
+// On the home the nav items are in-page anchors; on internal routes they become
+// absolute paths so they work from any page (`/servicios`, `/#stack`, ...).
+function resolveHref(target: string, isHome: boolean): string {
+  if (isHome) return target
+  return target === '#servicios' ? '/servicios' : `/${target}`
+}
+
 export default function Header() {
+  const pathname = usePathname()
+  const isHome = pathname === '/'
   const [open, setOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const [active, setActive] = useState('')
@@ -20,6 +30,8 @@ export default function Header() {
   }, [])
 
   useEffect(() => {
+    if (!isHome) return
+
     const sections = nav
       .map((item) => document.getElementById(item.href.slice(1)))
       .filter((el): el is HTMLElement => el !== null)
@@ -40,7 +52,7 @@ export default function Header() {
 
     sections.forEach((s) => observer.observe(s))
     return () => observer.disconnect()
-  }, [])
+  }, [isHome])
 
   return (
     <header
@@ -49,7 +61,7 @@ export default function Header() {
       }`}
     >
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
-        <Link href="#inicio" className="flex items-center gap-3" onClick={() => setOpen(false)}>
+        <Link href="/" className="flex items-center gap-3" onClick={() => setOpen(false)}>
           <Image
             src="/logo.png"
             alt="Logo de Digital-devs"
@@ -68,18 +80,21 @@ export default function Header() {
         </Link>
 
         <nav aria-label="Menú principal" className="hidden items-center gap-1 lg:flex">
-          {nav.map((item) => (
-            <a
-              key={item.href}
-              href={item.href}
-              aria-current={active === item.href ? 'location' : undefined}
-              className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-soft hover:text-fg ${
-                active === item.href ? 'font-semibold text-fg' : 'text-muted'
-              }`}
-            >
-              {item.label}
-            </a>
-          ))}
+          {nav.map((item) => {
+            const href = resolveHref(item.href, isHome)
+            return (
+              <Link
+                key={item.href}
+                href={href}
+                aria-current={active === item.href ? 'location' : undefined}
+                className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-soft hover:text-fg ${
+                  active === item.href ? 'font-semibold text-fg' : 'text-muted'
+                }`}
+              >
+                {item.label}
+              </Link>
+            )
+          })}
         </nav>
 
         <div className="flex items-center gap-2">
@@ -111,16 +126,19 @@ export default function Header() {
         }`}
       >
         <nav id="mobile-nav" aria-label="Menú móvil" className="flex flex-col gap-1">
-            {nav.map((item) => (
-              <a
-                key={item.href}
-                href={item.href}
-                onClick={() => setOpen(false)}
-                className="rounded-lg px-3 py-2.5 text-sm font-medium text-fg transition-colors hover:bg-soft"
-              >
-                {item.label}
-              </a>
-            ))}
+            {nav.map((item) => {
+              const href = resolveHref(item.href, isHome)
+              return (
+                <Link
+                  key={item.href}
+                  href={href}
+                  onClick={() => setOpen(false)}
+                  className="rounded-lg px-3 py-2.5 text-sm font-medium text-fg transition-colors hover:bg-soft"
+                >
+                  {item.label}
+                </Link>
+              )
+            })}
             <a
               href={site.whatsappLink}
               target="_blank"

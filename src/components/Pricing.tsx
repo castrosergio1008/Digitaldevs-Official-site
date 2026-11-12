@@ -1,24 +1,40 @@
 import { Check } from 'lucide-react'
-import { pricing } from '@/lib/content'
+import { pricing, type PricingModel } from '@/lib/content'
 import { site } from '@/lib/site'
 import Reveal from './Reveal'
 
-export default function Pricing() {
+type PricingProps = {
+  id?: string
+  eyebrow?: string
+  title?: string
+  description?: string
+  models?: PricingModel[]
+  // Home keeps the external WhatsApp link; service pages point to /#contacto.
+  ctaHref?: string
+  ctaLabel?: string
+  ctaExternal?: boolean
+}
+
+export default function Pricing({
+  id,
+  eyebrow = 'Inversión',
+  title = 'Modelos de contratación que se adaptan a ti',
+  description = 'Toda propuesta incluye alcance, entregables, inversión y fechas antes de empezar. Sin sorpresas.',
+  models = pricing,
+  ctaHref = site.whatsappLink,
+  ctaLabel = 'Solicitar cotización',
+  ctaExternal = true,
+}: PricingProps) {
   return (
-    <section id="precios" className="mx-auto max-w-6xl px-4 py-20 sm:px-6 lg:py-28">
+    <section id={id} className="mx-auto max-w-6xl px-4 py-20 sm:px-6 lg:py-28">
       <Reveal>
-        <p className="text-sm font-semibold uppercase tracking-widest text-primary">Inversión</p>
-        <h2 className="mt-2 max-w-2xl text-3xl font-bold tracking-tight sm:text-4xl">
-          Modelos de contratación que se adaptan a ti
-        </h2>
-        <p className="mt-4 max-w-2xl text-muted">
-          Toda propuesta incluye alcance, entregables, inversión y fechas antes de empezar. Sin
-          sorpresas.
-        </p>
+        <p className="text-sm font-semibold uppercase tracking-widest text-primary">{eyebrow}</p>
+        <h2 className="mt-2 max-w-2xl text-3xl font-bold tracking-tight sm:text-4xl">{title}</h2>
+        <p className="mt-4 max-w-2xl text-muted">{description}</p>
       </Reveal>
 
       <div className="mt-12 grid grid-cols-1 gap-4 md:grid-cols-3">
-        {pricing.map((m, i) => (
+        {models.map((m, i) => (
           <Reveal key={m.name} delay={i * 80}>
             <div
               className={`relative flex h-full flex-col rounded-2xl border p-6 transition-all duration-200 hover:-translate-y-1 ${
@@ -41,14 +57,14 @@ export default function Pricing() {
                 ))}
               </ul>
               <a
-                href={site.whatsappLink}
-                target="_blank"
-                rel="noreferrer"
+                href={ctaHref}
+                target={ctaExternal ? '_blank' : undefined}
+                rel={ctaExternal ? 'noreferrer' : undefined}
                 className={`mt-6 inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-semibold transition hover:brightness-110 ${
                   m.badge ? 'bg-cta text-white' : 'border border-edge bg-soft text-fg hover:border-primary/50'
                 }`}
               >
-                Solicitar cotización
+                {ctaLabel}
               </a>
             </div>
           </Reveal>

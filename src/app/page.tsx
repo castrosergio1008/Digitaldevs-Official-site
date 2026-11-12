@@ -15,15 +15,15 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       <Header />
-      <main>
+      <main id="main">
         <Hero />
         <TrustBar />
         <Services />
         <Stack />
-        <Process />
+        <Process id="proceso" />
         <Portfolio />
-        <Pricing />
-        <FAQ />
+        <Pricing id="precios" />
+        <FAQ id="faq" />
         <Contact />
         <CtaBanner />
       </main>

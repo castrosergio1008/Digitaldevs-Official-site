@@ -2,49 +2,74 @@ export type ServiceKey = 'web' | 'ecommerce' | 'apps' | 'mvp' | 'pwa' | 'support
 
 export type Service = {
   key: ServiceKey
+  // SEO-friendly slug in Spanish (no accents); the stable internal `key` is
+  // never exposed in the URL.
+  slug: string
   title: string
   description: string
   points: string[]
+  // Optional per-service SEO overrides; fallbacks keep the home untouched.
+  metaTitle?: string
+  metaDescription?: string
+  // Optional per-service FAQs; falls back to the global `faqs`.
+  faqs?: Faq[]
 }
 
 export const services: Service[] = [
   {
     key: 'web',
+    slug: 'sitios-web',
     title: 'Sitios web corporativos y landing pages',
     description: 'Páginas rápidas, modernas y orientadas a convertir visitantes en clientes. Diseño mobile-first y optimizadas para buscadores.',
     points: ['Landing pages de alta conversión', 'Sitios institucionales para empresas y organizaciones', 'SEO técnico y metas optimizadas'],
   },
   {
     key: 'ecommerce',
+    slug: 'tiendas-en-linea',
     title: 'Tiendas en línea y e-commerce',
     description: 'Catálogos y pasarelas de pago integradas para vender 24/7 con una experiencia compra ágil y segura.',
     points: ['Catálogo de productos y carrito', 'Pagos con Mercado Pago, PayU y más', 'Panel de administración de pedidos'],
   },
   {
     key: 'apps',
+    slug: 'aplicaciones-web',
     title: 'Aplicaciones web a medida',
     description: 'Sistemas web desarrollados sobre tu proceso de negocio: paneles, CRMs, inventarios, control de gestión y más.',
     points: ['Paneles de administración y dashboards', 'Módulos de gestión a la medida', 'Base de datos, API y autenticación segura'],
   },
   {
     key: 'mvp',
+    slug: 'mvp-para-startups',
     title: 'MVPs para startups y SaaS',
     description: 'De la idea a una primera versión funcional en semanas, para validar tu producto con usuarios reales antes de escalar.',
     points: ['Prototipo y arquitectura definidos al inicio', 'Iteraciones rápidas y costo eficiente', 'Listo para crecer con tu negocio'],
   },
   {
     key: 'pwa',
+    slug: 'apps-progresivas',
     title: 'Progressive Web Apps (PWA)',
     description: 'Tu aplicación como una app móvil: instalable, con notificaciones y funcionando sin conexión, sin pasar por las tiendas.',
     points: ['Instalable en móvil y escritorio', 'Modo offline y carga instantánea', 'Notificaciones push'],
   },
   {
     key: 'support',
+    slug: 'soporte-mantenimiento',
     title: 'Soporte, mantenimiento y evolución',
     description: 'Tu web siempre al día: mejoras continuas, corrección de errores, seguridad, respaldos y acompañamiento cercano.',
     points: ['Mantenimiento preventivo y correctivo', 'Mejoras y nuevas funcionalidades', 'Monitoreo, respaldo y seguridad'],
   },
 ]
+
+// Look up a service by its public slug. Returns undefined for unknown slugs so
+// the detail route can answer with a 404.
+export function getServiceBySlug(slug: string): Service | undefined {
+  return services.find((s) => s.slug === slug)
+}
+
+// Slug list consumed by generateStaticParams and the sitemap.
+export function getServicePaths(): { slug: string }[] {
+  return services.map((s) => ({ slug: s.slug }))
+}
 
 export type StackIconKey = 'code' | 'server' | 'database' | 'rocket'
 
