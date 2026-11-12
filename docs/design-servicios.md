@@ -25,14 +25,16 @@ Las decisiones principales son:
 2. **Páginas estáticas** generadas en el build con `generateStaticParams`, sin dependencias
    nuevas ni backend.
 3. **Reutilizar los componentes existentes** parametrizándolos (título, descripción, CTA,
-   FAQ) en lugar de copiar JSX. El home mantiene sus anclas y secciones intactas.
+   FAQ) en lugar de copiar JSX. El home mantiene sus secciones intactas; solo se convierten las
+   tarjetas de `Services` en enlaces.
 4. **Conversión sin salir de la página**: cada servicio incluye el formulario de contacto
    reutilizable con el servicio ya prellenado en el mensaje de WhatsApp, además de un CTA a
    `/#contacto` (el formulario global del home).
-5. **Header y Footer conscientes de la ruta**: en el home los enlaces siguen siendo anclas
-   (`#servicios`); en las páginas internas apuntan a rutas reales (`/servicios`,
-   `/#portafolio`, etc.). Se mantiene el número de enlaces del menú para no romper los tests
-   actuales.
+5. **Header y Footer conscientes de la ruta**: el ítem "Servicios" es un menú desplegable con
+   los 6 servicios (decisión del cliente, 2026-11-12) y su etiqueta enlaza a `/servicios`; el
+   resto de enlaces son anclas en el home y rutas absolutas (`/#portafolio`, etc.) en las
+   páginas internas. El conteo de enlaces colapsado se mantiene (6 desktop / 7 móvil); al abrir
+   el desplegable se muestran los 6 servicios.
 6. **SEO por página**: `generateMetadata`, canonical, OpenGraph, JSON-LD de tipo `Service`,
    breadcrumb y `sitemap.xml` actualizado.
 
@@ -85,7 +87,6 @@ Lo que este cambio **NO** hace (protege el alcance y evita scope creep):
 - **No crea contenido nuevo** por servicio (no hay casos de éxito, testimonios ni precios
   individuales). El contenido disponible es `title`, `description` y `points`.
 - **No agrega backend, base de datos, CMS ni dependencias nuevas.** Todo es estático.
-- **No implementa un dropdown de servicios** en el header (ver Alternativas).
 - **No genera imágenes OG distintas por servicio.** Se mantiene `public/og.png` global.
 - **No integra analytics** (GA4/Plausible). Hoy no existe; se deja como pregunta abierta.
 - **No cambia el formulario de contacto del home** (mismos campos, mismas etiquetas,
@@ -104,7 +105,7 @@ Lo que este cambio **NO** hace (protege el alcance y evita scope creep):
 | FR-2 | Existe `/servicios/[servicio]` para cada uno de los 6 servicios, generada estáticamente. |
 | FR-3 | Cada página de servicio muestra: hero del servicio (título + descripción), beneficios (`points`), proceso, modelos de inversión, FAQ y CTA. |
 | FR-4 | El home sigue siendo la portada y la sección `Services` enlaza a cada `/servicios/[servicio]`. |
-| FR-5 | El header navega correctamente desde el home (anclas) y desde las rutas internas (rutas absolutas). |
+| FR-5 | El header navega correctamente desde el home y desde las rutas internas, con un menú desplegable de servicios que enlaza a las 6 páginas de detalle. |
 | FR-6 | Existe breadcrumb ("Inicio / Servicios / {servicio}") en el detalle. |
 | FR-7 | El formulario de contacto es reutilizable y, en las páginas de servicio, llega a WhatsApp con el nombre del servicio en el mensaje. |
 | FR-8 | Las secciones globales con anclas (`#servicios`, `#stack`, `#proceso`, `#portafolio`, `#precios`, `#faq`, `#contacto`) permanecen **solo en el home**. |
@@ -305,7 +306,8 @@ Hola Digital-devs! Me interesa el servicio "Tiendas en línea y e-commerce". Soy
 Hola Digital-devs! Soy {nombre}.{teléfono} {mensaje}
 ```
 
-Así el home no cambia (los tests e2e actuales siguen válidos) y el servicio gana contexto.
+Así el formulario del home mantiene su comportamiento (los tests e2e de contacto siguen
+válidos) y el servicio gana contexto.
 
 #### 4.5.2 Composición de la página de servicio
 
@@ -343,18 +345,20 @@ no se duplica la sección `Contact` global con su `id="contacto"`, y el home que
 **Header:**
 
 - Se usa `usePathname` (client component) para decidir los hrefs.
-- En el home (`/`): los 6 enlaces siguen siendo anclas (`#servicios`, `#stack`, `#proceso`,
-  `#portafolio`, `#precios`, `#faq`). **El número de enlaces no cambia** → los tests e2e
-  actuales (`navLinks.toHaveCount(6)` y `mobileNav.toHaveCount(7)`) siguen pasando sin
-  modificación.
-- En rutas internas: el enlace "Servicios" apunta a `/servicios`; el resto apuntan a
-  `/#stack`, `/#proceso`, etc. (rutas absolutas con hash, que cargan el home y scrollean).
-- El logo enlaza a `/` (hoy enlaza a `#inicio`, que fallaría en rutas internas).
+- El ítem "Servicios" es un **menú desplegable** (decisión del cliente, 2026-11-12): la
+  etiqueta enlaza a `/servicios` (índice) y un botón con chevron abre el desplegable con los
+  6 servicios (`/servicios/[slug]`). El desplegable es accesible (botón con
+  `aria-haspopup`/`aria-expanded`/`aria-controls`, cierre con Escape, clic fuera y cambio de
+  ruta) y en móvil se expande como lista.
+- En el home (`/`): los demás enlaces siguen siendo anclas (`#stack`, `#proceso`, `#portafolio`,
+  `#precios`, `#faq`). En rutas internas apuntan a rutas absolutas (`/#stack`, etc.).
+- El logo enlaza a `/`.
 
 ```mermaid
 flowchart LR
-  H[Header] -->|pathname === '/'| A[#servicios, #stack, ...]
-  H -->|pathname !== '/'| B[/servicios, /#stack, ...]
+  H[Header] -->|siempre| S[Servicios: /servicios + dropdown con los 6 servicios]
+  H -->|pathname === '/'| A[#stack, #proceso, ...]
+  H -->|pathname !== '/'| B[/#stack, /#proceso, ...]
   H -->|siempre| W[WhatsApp CTA]
 ```
 
@@ -368,7 +372,8 @@ dentro del menú (reutilizando el item "Servicios", sin añadir un enlace adicio
 
 **Footer:**
 
-- Los enlaces de "Secciones" pasan a rutas absolutas (`/#servicios`, etc.).
+- Los enlaces de "Secciones" apuntan a rutas absolutas (`/servicios`, `/#stack`, etc.), con
+  "Servicios" a `/servicios` (sin `//servicios`).
 - Se añade una columna "Servicios" con los 6 enlaces a las páginas de detalle (SEO interno).
 - El grid se ajusta para acomodar la nueva columna (ej. `lg:grid-cols-5` o brand a 1 columna).
 
@@ -397,8 +402,8 @@ dentro del menú (reutilizando el item "Servicios", sin añadir un enlace adicio
 - `Services.tsx` envuelve cada tarjeta en un `Link` de Next con `href={`/servicios/${s.slug}`}`
   y un `aria-label` descriptivo (ej. "Ver detalle de Tiendas en línea y e-commerce").
 - Se mantiene `id="servicios"`, el grid bento y el resto del copy.
-- El resto de secciones (Hero, TrustBar, Stack, Process, Portfolio, Pricing, FAQ, Contact,
-  CtaBanner, Footer) **no cambia**.
+- El resto de secciones del home (Hero, TrustBar, Stack, Process, Portfolio, Pricing, FAQ,
+  Contact, CtaBanner) **no cambia** en el home; el Footer se actualiza en la sección 4.7.
 
 ### 4.10 Diagrama de arquitectura de rutas
 
@@ -451,10 +456,11 @@ flowchart TD
 
 - **Pros:** acceso directo a cada servicio desde cualquier página.
 - **Contras:** añade complejidad de UI (hover/focus/teclado, móvil); esconde las rutas a los
-  buscadores; rompe los tests actuales de conteo de enlaces; 6 servicios no justifican un
-  menú desplegable.
-- **Rechazo:** se prefiere el enlace contextual a `/servicios` (más simple, indexable y
-  mantenible). El índice `/servicios` actúa como hub.
+  buscadores; requiere actualizar los tests de conteo de enlaces.
+- **Decisión (2026-11-12):** el cliente prefirió el dropdown para navegar directo a los 6
+  servicios. Se implementa como un desplegable accesible (clic/teclado, cierre con Escape y
+  clic fuera) y el índice `/servicios` se mantiene como hub y como destino de la etiqueta
+  "Servicios".
 
 ### A5. CTA que solo enlaza a `/#contacto` (sin formulario incrustado)
 
@@ -478,7 +484,7 @@ flowchart TD
 
 | Riesgo | Impacto | Mitigación |
 |---|---|---|
-| Romper los tests e2e del home (anclas y conteo de nav) | Alto | El nav del home no cambia (6 enlaces, mismos hrefs). Solo se convierten las tarjetas de `Services` en `Link`. Los tests actuales se ejecutan sin modificación. |
+| Romper los tests e2e del home (anclas y conteo de nav) | Alto | El nav del home cambia `Servicios` de `#servicios` a `/servicios` y se añade el dropdown; se actualizó `NAV_HREFS` y se agregó `e2e/header-dropdown.spec.ts`. El conteo colapsado se mantiene (6 desktop / 7 móvil). |
 | IDs duplicados en el DOM (`proceso`, `precios`, `faq`, `contacto`) | Medio | Las páginas de servicio usan los componentes parametrizados **sin** los IDs globales (o con IDs distintos). El formulario usa `idPrefix` para `htmlFor`/`id`. |
 | Contenido duplicado / canibalización SEO | Medio | Cada página tiene título, descripción, H1 y canonical únicos; el índice enlaza a los detalles con contexto; FAQs se filtran por servicio. |
 | 404 por slugs mal escritos o antiguos | Medio | `dynamicParams = false` + `notFound()`. Si el día de mañana cambia un slug, se documenta la necesidad de una redirección 301 (hoy no aplica porque no hay URLs públicas anteriores). |
@@ -595,8 +601,8 @@ abierta).
    *Resuelto por el cliente.*
 7. **Redirecciones:** no aplica hoy (no hay URLs públicas anteriores). Si un slug cambia en el
    futuro, se añadirá un 301. *Resuelto por `apex-forge`.*
-8. **Header:** se confirma el enlace contextual a `/servicios` (sin dropdown). *Resuelto por el
-   cliente.*
+8. **Header:** se confirma el menú desplegable de servicios en el header (decisión del cliente,
+   2026-11-12). *Resuelto por el cliente.*
 
 ---
 
@@ -605,8 +611,8 @@ abierta).
 - `src/app/page.tsx`: composición de secciones del home.
 - `src/lib/content.ts`: 6 servicios con `key/title/description/points`, más `stack`,
   `process`, `projects`, `pricing`, `faqs`.
-- `src/lib/site.ts`: `nav` (anclas), `site.url`, contacto y SEO.
-- `src/components/Header.tsx`: nav de anclas, menú móvil, logo a `#inicio`, CTA a WhatsApp.
+- `src/lib/site.ts`: `nav` (ruta `/servicios` + 5 anclas), `site.url`, contacto y SEO.
+- `src/components/Header.tsx`: nav con desplegable de servicios, menú móvil, logo a `/`, CTA a WhatsApp.
 - `src/components/Services.tsx`: tarjetas sin enlace (oportunidad de enlazar).
 - `src/components/Contact.tsx`: formulario con `window.open` a WhatsApp y labels `Nombre`,
   `Teléfono / WhatsApp`, `¿Qué proyecto tienes en mente?`.
@@ -616,5 +622,5 @@ abierta).
   `FAQPage`).
 - `src/app/sitemap.ts`: solo la home (a actualizar).
 - `next.config.ts`: CSP y headers de seguridad (sin cambios necesarios).
-- `e2e/smoke.spec.ts`: aserciones de anclas, conteo de nav (6/7), secciones y formulario.
+- `e2e/smoke.spec.ts`: aserciones de navegación (rutas + anclas), conteo de nav colapsado (6 desktop / 7 móvil), secciones y formulario.
 - `package.json`: Next 15.5, React 19, Tailwind v4, Playwright (sin Vitest).

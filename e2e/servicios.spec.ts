@@ -97,14 +97,16 @@ test.describe('servicios — navigation', () => {
     ])
   })
 
-  test('header on the home keeps the six in-page anchors', async ({ page }) => {
+  test('header on the home links Servicios to /servicios and keeps the five anchors', async ({
+    page,
+  }) => {
     await goto(page, '/')
 
     const nav = page.getByRole('navigation', { name: 'Menú principal' })
     const hrefs = await nav.getByRole('link').evaluateAll((links) =>
       links.map((link) => link.getAttribute('href'))
     )
-    expect(hrefs).toEqual(['#servicios', '#stack', '#proceso', '#portafolio', '#precios', '#faq'])
+    expect(hrefs).toEqual(['/servicios', '#stack', '#proceso', '#portafolio', '#precios', '#faq'])
   })
 
   test('service form opens WhatsApp with the service name in the message', async ({ page }) => {

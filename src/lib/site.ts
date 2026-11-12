@@ -33,7 +33,7 @@ export const site = {
 } as const
 
 export const nav = [
-  { href: '#servicios', label: 'Servicios' },
+  { href: '/servicios', label: 'Servicios' },
   { href: '#stack', label: 'Stack' },
   { href: '#proceso', label: 'Proceso' },
   { href: '#portafolio', label: 'Portafolio' },

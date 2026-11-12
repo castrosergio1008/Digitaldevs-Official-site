@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 
-const NAV_HREFS = ['#servicios', '#stack', '#proceso', '#portafolio', '#precios', '#faq']
+const NAV_HREFS = ['/servicios', '#stack', '#proceso', '#portafolio', '#precios', '#faq']
 
 const SECTION_IDS = ['servicios', 'stack', 'proceso', 'portafolio', 'precios', 'faq', 'contacto']
 
@@ -10,7 +10,7 @@ test.describe('smoke — Digital-devs landing', () => {
     await expect(page).toHaveTitle(/Digital-devs/)
   })
 
-  test('header (logo + nav) is visible and nav points to expected anchors', async ({ page }) => {
+  test('header (logo + nav) is visible and nav points to the expected targets', async ({ page }) => {
     await page.goto('/')
 
     const header = page.locator('header')
@@ -96,7 +96,8 @@ test.describe('mobile navigation', () => {
   test.use({ viewport: { width: 375, height: 812 } })
 
   test('hamburger opens the mobile nav and closes it on anchor click', async ({ page }) => {
-    await page.goto('/')
+    // networkidle gives React time to hydrate before the first click.
+    await page.goto('/', { waitUntil: 'networkidle' })
 
     // Below the lg breakpoint the desktop nav is hidden and the burger is visible.
     const burger = page.getByRole('button', { name: 'Abrir menú' })
@@ -112,7 +113,7 @@ test.describe('mobile navigation', () => {
     const mobileNav = page.getByRole('navigation', { name: 'Menú móvil' })
     await expect(mobileNav).toBeVisible()
 
-    // 6 section anchors + the WhatsApp CTA.
+    // 6 nav links + the WhatsApp CTA (the services submenu is collapsed).
     const navLinks = mobileNav.getByRole('link')
     await expect(navLinks).toHaveCount(NAV_HREFS.length + 1)
     const hrefs = await navLinks.evaluateAll((links) =>
