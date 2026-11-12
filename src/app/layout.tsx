@@ -13,8 +13,8 @@ export const metadata: Metadata = {
   description: site.description,
   keywords: site.keywords,
   applicationName: site.name,
-  authors: [{ name: 'Digitaldevs' }],
-  creator: 'Digitaldevs',
+  authors: [{ name: 'Digital-devs' }],
+  creator: 'Digital-devs',
   alternates: { canonical: '/' },
   robots: { index: true, follow: true },
   formatDetection: { email: false, address: false, telephone: false },
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     siteName: site.name,
     locale: site.locale,
     type: 'website',
-    images: [{ url: site.ogImage, width: 1200, height: 630, alt: 'Digitaldevs' }],
+    images: [{ url: site.ogImage, width: 1200, height: 630, alt: 'Digital-devs' }],
   },
   twitter: {
     card: 'summary_large_image',
@@ -54,7 +54,7 @@ const jsonLdOrganization = {
   '@type': 'Organization',
   '@id': `${site.url}/#organization`,
   name: site.name,
-  alternateName: 'Digitaldevs Sitio Oficial',
+  alternateName: 'Digital-devs Sitio Oficial',
   description:
     'Empresa de desarrollo de software a la medida: sitios web, tiendas en línea y aplicaciones web.',
   email: site.email,
@@ -81,7 +81,7 @@ const jsonLdWebSite = {
   '@context': 'https://schema.org',
   '@type': 'WebSite',
   name: site.name,
-  alternateName: 'Sitio oficial de Digitaldevs',
+  alternateName: 'Sitio oficial de Digital-devs',
   url: site.url,
   inLanguage: site.locale.replace('_', '-'),
   description:

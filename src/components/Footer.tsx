@@ -9,9 +9,9 @@ export default function Footer() {
         <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4">
           <div className="lg:col-span-2">
             <div className="flex items-center gap-3">
-              <Image src="/logo.png" alt="Logo Digitaldevs" width={40} height={40} loading="lazy" className="h-10 w-10 rounded-lg object-cover" />
+              <Image src="/logo.png" alt="Logo Digital-devs" width={40} height={40} loading="lazy" className="h-10 w-10 rounded-lg object-cover" />
               <span className="text-lg font-bold tracking-tight text-fg">
-                Digital<span className="text-primary">devs</span>
+                Digital-<span className="text-primary">devs</span>
               </span>
             </div>
             <p className="mt-4 max-w-sm text-sm leading-relaxed text-muted">

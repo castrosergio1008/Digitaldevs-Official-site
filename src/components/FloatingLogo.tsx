@@ -136,7 +136,7 @@ export default function FloatingLogo() {
       <div className={`animate-floaty${dragging ? ' is-dragging' : ''}`}>
         <div
           role="img"
-          aria-label="Isotipo de DigitalDevs, arrastrable"
+          aria-label="Isotipo de Digital-devs, arrastrable"
           title="Arrástrame"
           className={`logo-visual relative overflow-hidden rounded-2xl bg-soft opacity-90 ${visualState}`}
           style={{ rotate: `${tilt}deg` }}

@@ -52,14 +52,14 @@ export default function Header() {
         <Link href="#inicio" className="flex items-center gap-3" onClick={() => setOpen(false)}>
           <Image
             src="/logo.png"
-            alt="Logo de Digitaldevs"
+            alt="Logo de Digital-devs"
             width={40}
             height={40}
             className="h-10 w-10 rounded-lg object-cover"
             priority
           />
           <span className="text-lg font-bold tracking-tight text-fg">
-            Digital<span className="text-primary">devs</span>
+            Digital-<span className="text-primary">devs</span>
           </span>
           <span className="hidden items-center gap-1 rounded-full border border-edge bg-soft px-2 py-0.5 text-[10px] font-semibold text-muted sm:inline-flex">
             <BadgeCheck className="h-3 w-3 text-accent" />

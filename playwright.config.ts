@@ -1,7 +1,7 @@
 import { defineConfig, devices } from '@playwright/test'
 
 /**
- * E2E smoke tests for the Digitaldevs landing page.
+ * E2E smoke tests for the Digital-devs landing page.
  *
  * A production build + `next start` is used in the webServer so the tests
  * exercise the real artifact (deterministic for CI), not the dev server.

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 
 const STEPS: Array<{ prefix: string; text: string; className: string }> = [
-  { prefix: '$', text: 'digitaldevs build --produccion', className: 'text-muted' },
+  { prefix: '$', text: 'digital-devs build --produccion', className: 'text-muted' },
   { prefix: '✓', text: 'diseño y arquitectura listos', className: 'text-emerald-400' },
   { prefix: '✓', text: 'desarrollo full stack completado', className: 'text-emerald-400' },
   { prefix: '✓', text: 'despliegue en producción exitoso', className: 'text-emerald-400' },
@@ -34,7 +34,7 @@ export default function Terminal() {
         <span className="h-3 w-3 rounded-full bg-[#ff5f57]" />
         <span className="h-3 w-3 rounded-full bg-[#febc2e]" />
         <span className="h-3 w-3 rounded-full bg-[#28c840]" />
-        <span className="ml-3 font-mono text-xs text-slate-500">digitaldevs — terminal</span>
+        <span className="ml-3 font-mono text-xs text-slate-500">digital-devs — terminal</span>
       </div>
       <div className="space-y-2 px-5 py-5 font-mono text-sm leading-relaxed">
         {STEPS.slice(0, line).map((s, i) => (

@@ -20,7 +20,7 @@ export default function Contact() {
   const submit = (e: React.FormEvent) => {
     e.preventDefault()
     const text = encodeURIComponent(
-      `Hola Digitaldevs! Soy ${form.nombre || 'un interesado'}.${form.telefono ? ` Mi teléfono es ${form.telefono}.` : ''} ${form.mensaje}`
+      `Hola Digital-devs! Soy ${form.nombre || 'un interesado'}.${form.telefono ? ` Mi teléfono es ${form.telefono}.` : ''} ${form.mensaje}`
     )
     const url = `${site.whatsappBase}?text=${text}`
     // `noopener` makes window.open() always return null, so treat it as the

@@ -1,6 +1,6 @@
-# Digitaldevs — Sitio web corporativo
+# Digital-devs — Sitio web corporativo
 
-Sitio de una página para promocionar **Digitaldevs**, empresa de desarrollo de software a la medida
+Sitio de una página para promocionar **Digital-devs**, empresa de desarrollo de software a la medida
 (sitios web, e-commerce, aplicaciones web, MVPs y soporte).
 
 ## Stack

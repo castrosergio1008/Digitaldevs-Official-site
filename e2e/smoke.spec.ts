@@ -4,10 +4,10 @@ const NAV_HREFS = ['#servicios', '#stack', '#proceso', '#portafolio', '#precios'
 
 const SECTION_IDS = ['servicios', 'stack', 'proceso', 'portafolio', 'precios', 'faq', 'contacto']
 
-test.describe('smoke — Digitaldevs landing', () => {
+test.describe('smoke — Digital-devs landing', () => {
   test('home loads with the correct title', async ({ page }) => {
     await page.goto('/')
-    await expect(page).toHaveTitle(/Digitaldevs/)
+    await expect(page).toHaveTitle(/Digital-devs/)
   })
 
   test('header (logo + nav) is visible and nav points to expected anchors', async ({ page }) => {
@@ -16,7 +16,7 @@ test.describe('smoke — Digitaldevs landing', () => {
     const header = page.locator('header')
     await expect(header).toBeVisible()
 
-    const logoLink = header.getByRole('link', { name: /Digitaldevs/ }).first()
+    const logoLink = header.getByRole('link', { name: /Digital-devs/ }).first()
     await expect(logoLink).toBeVisible()
 
     const nav = header.getByRole('navigation', { name: 'Menú principal' })
