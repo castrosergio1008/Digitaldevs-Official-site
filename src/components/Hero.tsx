@@ -1,22 +1,30 @@
 import { ArrowRight, MessageCircle, Mail, MapPin } from 'lucide-react'
+import Image from 'next/image'
 import { site } from '@/lib/site'
-import Terminal from './Terminal'
 import Reveal from './Reveal'
-import FloatingLogo from './FloatingLogo'
 
 export default function Hero() {
   return (
-    <section id="inicio" className="relative overflow-hidden">
+    <section id="inicio" className="relative flex min-h-[90vh] items-center overflow-hidden">
+      {/* Decorative full-bleed cover image. */}
+      <div aria-hidden="true" className="absolute inset-0">
+        <Image src="/og.png" alt="" fill priority sizes="100vw" className="object-cover" />
+        {/* Opaque left -> transparent right: keeps the copy legible over the cover. */}
+        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/85 to-background/25" />
+        {/* Bottom blend into the next section. */}
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/40" />
+      </div>
+
       <div className="grid-lines pointer-events-none absolute inset-0 [mask-image:radial-gradient(ellipse_70%_60%_at_50%_0%,black,transparent)]" />
       <div className="animate-pulse-soft pointer-events-none absolute -top-40 left-1/2 h-96 w-[42rem] -translate-x-1/2 rounded-full bg-primary/20 blur-[120px]" />
       <div className="pointer-events-none absolute -right-32 top-40 h-72 w-72 rounded-full bg-accent/10 blur-[100px]" />
 
-      <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-4 pb-20 pt-16 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:pb-28 lg:pt-24">
-        <div>
+      <div className="relative mx-auto w-full max-w-6xl px-4 py-24 sm:px-6 lg:py-32">
+        <div className="max-w-2xl">
           {/* Above-the-fold content is painted immediately (no Reveal) to protect LCP.
               The only motion is a CSS-only fade-in that is disabled under reduced motion. */}
           <div className="animate-hero-fade">
-            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-edge bg-soft px-3 py-1.5 text-xs font-medium text-muted">
+            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-edge bg-soft/80 px-3 py-1.5 text-xs font-medium text-muted backdrop-blur">
               <span className="h-2 w-2 rounded-full bg-emerald-400" />
               Disponible para nuevos proyectos · Remoto LATAM
             </div>
@@ -66,11 +74,6 @@ export default function Hero() {
             </div>
           </Reveal>
         </div>
-
-        <Reveal delay={200} className="relative flex justify-center lg:justify-end">
-          <Terminal />
-          <FloatingLogo />
-        </Reveal>
       </div>
     </section>
   )
