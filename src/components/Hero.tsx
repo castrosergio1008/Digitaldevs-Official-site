@@ -31,7 +31,7 @@ export default function Hero() {
 
             <h1 className="text-4xl font-bold leading-[1.06] tracking-tight sm:text-5xl lg:text-6xl">
               Tu socio de crecimiento tecnológico:{' '}
-              <span className="text-gradient">software, automatización y analítica.</span>
+              <span className="text-gradient">Software, automatización y analítica.</span>
             </h1>
 
             <p className="mt-6 max-w-xl text-base leading-relaxed text-muted sm:text-lg">
