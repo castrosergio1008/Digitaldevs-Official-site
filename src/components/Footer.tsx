@@ -84,7 +84,15 @@ export default function Footer() {
           <span>
             © {site.year} {site.name} · Sitio oficial · Todos los derechos reservados.
           </span>
-          <span className="font-mono">software a la medida · remoto LATAM</span>
+          <div className="flex items-center gap-4">
+            <Link
+              href="/privacidad"
+              className="transition-colors hover:text-fg"
+            >
+              Política de privacidad
+            </Link>
+            <span className="font-mono">software a la medida · remoto LATAM</span>
+          </div>
         </div>
       </div>
     </footer>

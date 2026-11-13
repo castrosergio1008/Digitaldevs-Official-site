@@ -3,6 +3,7 @@ import { Inter, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
 import { site } from '@/lib/site'
 import { faqs } from '@/lib/content'
+import ChatWidgetMount from '@/components/chat/ChatWidgetMount'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'swap' })
 const jetbrains = JetBrains_Mono({ subsets: ['latin'], variable: '--font-jetbrains', display: 'swap' })
@@ -103,6 +104,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdWebSite) }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdFaq) }} />
         {children}
+        <ChatWidgetMount />
       </body>
     </html>
   )
