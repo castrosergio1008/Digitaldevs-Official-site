@@ -1,6 +1,5 @@
 import Header from '@/components/Header'
 import Hero from '@/components/Hero'
-import TrustBar from '@/components/TrustBar'
 import Services from '@/components/Services'
 import Stack from '@/components/Stack'
 import Process from '@/components/Process'
@@ -17,7 +16,6 @@ export default function Home() {
       <Header />
       <main id="main">
         <Hero />
-        <TrustBar />
         <Services />
         <Stack />
         <Process id="proceso" />

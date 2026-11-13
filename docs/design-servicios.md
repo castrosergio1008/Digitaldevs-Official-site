@@ -48,8 +48,8 @@ home salvo convertir sus tarjetas de servicio en enlaces.
 
 El sitio actual (`src/app/page.tsx`) compone secciones en una sola landing:
 
-`Header → Hero → TrustBar → Services → Stack → Process → Portfolio → Pricing → FAQ →
-Contact → CtaBanner → Footer`
+`Header → Hero → Services → Stack → Process → Portfolio → Pricing → FAQ → Contact →
+CtaBanner → Footer`
 
 El contenido está centralizado en `src/lib/content.ts` (single source of truth): 6
 servicios con `{ key, title, description, points[] }`, más `stack`, `process`, `projects`,
@@ -402,8 +402,8 @@ dentro del menú (reutilizando el item "Servicios", sin añadir un enlace adicio
 - `Services.tsx` envuelve cada tarjeta en un `Link` de Next con `href={`/servicios/${s.slug}`}`
   y un `aria-label` descriptivo (ej. "Ver detalle de Tiendas en línea y e-commerce").
 - Se mantiene `id="servicios"`, el grid bento y el resto del copy.
-- El resto de secciones del home (Hero, TrustBar, Stack, Process, Portfolio, Pricing, FAQ,
-  Contact, CtaBanner) **no cambia** en el home; el Footer se actualiza en la sección 4.7.
+- El resto de secciones del home (Hero, Stack, Process, Portfolio, Pricing, FAQ, Contact,
+  CtaBanner) **no cambia** en el home; el Footer se actualiza en la sección 4.7.
 
 ### 4.10 Diagrama de arquitectura de rutas
 

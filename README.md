@@ -22,7 +22,7 @@ src/
     icon.png        # favicon (isotipo)
     sitemap.ts      # SEO — sitemap.xml (usa la URL de site.ts)
     robots.ts       # SEO — robots.txt (usa la URL de site.ts)
-  components/       # Header, Hero, Terminal, TrustBar, Services, Stack,
+  components/       # Header, Hero, Terminal, Services, Stack,
                     # Process, Portfolio, Pricing, FAQ, Contact, CTA, Footer,
                     # ThemeToggle, Reveal
   lib/
