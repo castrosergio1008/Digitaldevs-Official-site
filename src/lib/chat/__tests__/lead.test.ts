@@ -2,7 +2,10 @@ import { describe, expect, it } from 'vitest'
 import {
   buildLeadContext,
   buildWhatsAppLink,
+  detectContactInfo,
+  extractNameFromMessage,
   resolveLeadMethod,
+  shouldDetectContact,
   validateLead,
   validateLeadContact,
   validateLeadName,
@@ -101,5 +104,58 @@ describe('buildWhatsAppLink', () => {
   it('does not leak raw spaces into the URL', () => {
     const link = buildWhatsAppLink('Ana', 'Hola mundo')
     expect(link).not.toContain(' ')
+  })
+})
+
+describe('shouldDetectContact', () => {
+  it('returns true when the message mentions contact channels', () => {
+    expect(shouldDetectContact('Mi WhatsApp es 3001234567')).toBe(true)
+    expect(shouldDetectContact('Mi correo es ana@example.com')).toBe(true)
+    expect(shouldDetectContact('Mi número es 3001234567')).toBe(true)
+    expect(shouldDetectContact('Mi email es ana@example.com')).toBe(true)
+    expect(shouldDetectContact('Quiero que me contacten')).toBe(true)
+  })
+
+  it('returns false when there is no contact intent', () => {
+    expect(shouldDetectContact('Hola, ¿qué servicios ofrecen?')).toBe(false)
+    expect(shouldDetectContact('Tengo 3001234567 dólares para invertir')).toBe(false)
+    expect(shouldDetectContact('')).toBe(false)
+  })
+})
+
+describe('detectContactInfo', () => {
+  it('detects an email address', () => {
+    const result = detectContactInfo('Mi correo es ana@example.com')
+    expect(result).toEqual({ contact: 'ana@example.com', method: 'email' })
+  })
+
+  it('detects a WhatsApp number with spaces and dashes', () => {
+    const result = detectContactInfo('Mi WhatsApp es 300 123 4567')
+    expect(result).toEqual({ contact: '3001234567', method: 'whatsapp' })
+  })
+
+  it('detects a WhatsApp number with country code', () => {
+    const result = detectContactInfo('Mi número es +57 311 360 9710')
+    expect(result).toEqual({ contact: '573113609710', method: 'whatsapp' })
+  })
+
+  it('returns null when no usable contact is found', () => {
+    expect(detectContactInfo('Hola, ¿qué servicios ofrecen?')).toBeNull()
+    expect(detectContactInfo('Tengo 123 dólares')).toBeNull()
+    expect(detectContactInfo('')).toBeNull()
+  })
+})
+
+describe('extractNameFromMessage', () => {
+  it('extracts a name from common patterns', () => {
+    expect(extractNameFromMessage('Me llamo Ana Pérez')).toBe('Ana Pérez')
+    expect(extractNameFromMessage('Soy Juan')).toBe('Juan')
+    expect(extractNameFromMessage('Mi nombre es María')).toBe('María')
+  })
+
+  it('returns null when no name is found', () => {
+    expect(extractNameFromMessage('Hola, ¿qué servicios ofrecen?')).toBeNull()
+    expect(extractNameFromMessage('Mi WhatsApp es 3001234567')).toBeNull()
+    expect(extractNameFromMessage('')).toBeNull()
   })
 })

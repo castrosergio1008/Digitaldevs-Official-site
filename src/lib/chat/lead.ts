@@ -80,3 +80,74 @@ export function buildWhatsAppLink(name: string, context: string): string {
     .trim()
   return `${site.whatsappBase}?text=${encodeURIComponent(text)}`
 }
+
+/**
+ * True when the message looks like the visitor is sharing their contact info.
+ * Used to gate automatic WhatsApp hand-off so a random number mentioned in a
+ * question ("tengo 3001234567 dólares") does not trigger the hand-off.
+ */
+const CONTACT_KEYWORDS =
+  /(whatsapp|correo|email|n[úu]mero|telefono|tel[ée]fono|celular|contacto|contacten|mi n[úu]mero|mi whatsapp|mi correo|mi email)/i
+
+export function shouldDetectContact(message: string): boolean {
+  return CONTACT_KEYWORDS.test(message)
+}
+
+/**
+ * Detects a WhatsApp number or email address in a free-text message.
+ *
+ * Used to offer an automatic WhatsApp hand-off: when the visitor types their
+ * contact details in the conversation (instead of the lead form), the widget
+ * can open WhatsApp without waiting for a click. The detection is structural
+ * (no NLP): an email is matched by pattern, anything else that looks like a
+ * phone number is treated as WhatsApp.
+ *
+ * Returns the normalized contact and the detected method, or null when the
+ * message does not contain usable contact information.
+ */
+export function detectContactInfo(message: string): { contact: string; method: LeadMethod } | null {
+  const text = message.trim()
+  if (!text) return null
+
+  // Email first: the pattern is specific enough to avoid false positives.
+  const emailMatch = text.match(/[^\s@]+@[^\s@]+\.[^\s@]+/)
+  if (emailMatch) {
+    return { contact: emailMatch[0], method: 'email' }
+  }
+
+  // WhatsApp: a phone-like token with at least 7 digits (ITU-T E.164 max 15).
+  // Captures optional country code, spaces, dots and dashes between digits.
+  const whatsappMatch = text.match(/(\+?\d[\d\s.\-]{5,}\d)/)
+  if (whatsappMatch) {
+    const digits = whatsappMatch[1].replace(/\D/g, '')
+    if (digits.length >= 7 && digits.length <= 15) {
+      return { contact: digits, method: 'whatsapp' }
+    }
+  }
+
+  return null
+}
+
+/**
+ * Extracts a visitor's name from a free-text message using common patterns
+ * ("me llamo Ana", "soy Ana", "mi nombre es Ana Pérez"). Returns null when no
+ * plausible name is found so the caller can fall back to a generic greeting.
+ */
+export function extractNameFromMessage(message: string): string | null {
+  const text = message.trim()
+  if (!text) return null
+
+  const patterns = [
+    /(?:me llamo|soy|mi nombre es)\s+([A-ZÁÉÍÓÚÑ][a-záéíóúñ]+(?:\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+)?)/i,
+  ]
+
+  for (const pattern of patterns) {
+    const match = text.match(pattern)
+    if (match?.[1]) {
+      const name = match[1].trim()
+      if (name.length >= 2 && name.length <= 80) return name
+    }
+  }
+
+  return null
+}

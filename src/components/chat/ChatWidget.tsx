@@ -3,7 +3,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { ChatMessage, ChatResponse, LeadPayload } from '@/lib/chat/types'
 import { site } from '@/lib/site'
-import { buildLeadContext, buildWhatsAppLink } from '@/lib/chat/lead'
+import {
+  buildLeadContext,
+  buildWhatsAppLink,
+  detectContactInfo,
+  extractNameFromMessage,
+  shouldDetectContact,
+} from '@/lib/chat/lead'
 import {
   clearChatSession,
   createSessionId,
@@ -107,6 +113,29 @@ export default function ChatWidget() {
       setTyping(true)
       setError(null)
 
+      // Detect contact info in the user's message. When found and no lead has
+      // been captured yet, open WhatsApp immediately (within the user-activation
+      // window) so the conversation continues there without a link click.
+      let detectedLead: LeadPayload | null = null
+      if (!lead && shouldDetectContact(text)) {
+        const detected = detectContactInfo(text)
+        if (detected) {
+          detectedLead = {
+            name: extractNameFromMessage(text) ?? 'Visitante',
+            contact: detected.contact,
+            method: detected.method,
+          }
+          setLead(detectedLead)
+          setLeadFormOpen(false)
+
+          window.open(
+            buildWhatsAppLink(detectedLead.name, buildLeadContext(detectedLead, nextMessages)),
+            '_blank',
+            'noopener',
+          )
+        }
+      }
+
       try {
         const response = await fetch('/api/chat', {
           method: 'POST',
@@ -114,14 +143,22 @@ export default function ChatWidget() {
           body: JSON.stringify({
             sessionId: sessionId || undefined,
             messages: nextMessages,
-            lead: lead ?? undefined,
+            lead: lead ?? detectedLead ?? undefined,
           }),
         })
 
         if (response.ok) {
           const data = (await response.json()) as ChatResponse
           if (data.sessionId) setSessionId(data.sessionId)
-          setMessages(trimMessages([...nextMessages, { role: 'assistant', content: data.reply }]))
+          const withReply = [...nextMessages, { role: 'assistant' as const, content: data.reply }]
+          if (detectedLead) {
+            withReply.push({
+              role: 'assistant',
+              content:
+                '¡Listo! Ya abrí WhatsApp para que continúes la conversación con nuestro equipo. Si no se abrió, revisa las ventanas o pestañas de tu navegador.',
+            })
+          }
+          setMessages(trimMessages(withReply))
         } else {
           setError(await readChatError(response))
         }
