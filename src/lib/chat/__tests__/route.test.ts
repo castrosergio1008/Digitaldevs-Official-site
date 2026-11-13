@@ -402,6 +402,22 @@ describe('POST /api/chat', () => {
     expect(messages?.[0]?.role).toBe('system')
     expect(messages?.[0]?.content).toContain('Digital-devs')
     expect(messages?.at(-1)).toEqual({ role: 'user', content: 'Hola' })
+
+    const options = completeSpy.mock.calls[0]?.[1]
+    expect(options?.sessionId).toBe('session-1')
+    expect(options?.signal).toBeInstanceOf(AbortSignal)
+  })
+
+  it('passes a generated sessionId to the provider when the request omits one', async () => {
+    process.env.CHAT_ENABLED = 'true'
+    process.env.CHAT_PROVIDER = 'mock'
+
+    const provider = getChatProvider()
+    const completeSpy = vi.spyOn(provider, 'complete').mockResolvedValue('respuesta')
+
+    await POST(makeRequest({ messages: [{ role: 'user', content: 'Hola' }] }))
+
+    expect(completeSpy.mock.calls[0]?.[1]?.sessionId).toMatch(/^[0-9a-f-]{36}$/)
   })
 
   it('injects lead context without exposing the contact data', async () => {

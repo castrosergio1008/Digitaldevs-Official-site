@@ -174,7 +174,10 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     messages.push(...parsed.data.messages)
 
     const reply = (
-      await provider.complete(messages, AbortSignal.timeout(PROVIDER_TIMEOUT_MS))
+      await provider.complete(messages, {
+        sessionId: parsed.data.sessionId,
+        signal: AbortSignal.timeout(PROVIDER_TIMEOUT_MS),
+      })
     ).trim()
     return json(200, {
       reply: reply || CHAT_FALLBACK_REPLY,

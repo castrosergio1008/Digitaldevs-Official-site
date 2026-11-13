@@ -1,11 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { CHAT_FALLBACK_REPLY } from '../fallback'
 import { ChatProviderError } from '../types'
+import type { ChatMessage } from '../types'
 import { __resetChatProviderForTests, getChatProvider } from '../provider'
 import { OpenCodeGoProvider } from '../providers/opencode-go'
 import { MockProvider } from '../providers/mock'
 
-const ENV_KEYS = ['CHAT_PROVIDER', 'OPENCODE_API_KEY', 'CHAT_MODEL'] as const
+const ENV_KEYS = ['CHAT_PROVIDER', 'OPENCODE_API_KEY', 'CHAT_MODEL', 'CHAT_USER_AGENT'] as const
 let savedEnv: Record<string, string | undefined> = {}
 
 beforeEach(() => {
@@ -51,6 +52,8 @@ describe('OpenCodeGoProvider', () => {
     const headers = init.headers as Record<string, string>
     expect(headers.Authorization).toBe('Bearer secret-key')
     expect(headers['Content-Type']).toBe('application/json')
+    expect(headers['x-opencode-session']).toMatch(/^ses_[0-9a-f]{32}$/)
+    expect(headers['User-Agent']).toBe('digitaldevs-chatbot/1.0')
 
     const body = JSON.parse(init.body as string) as {
       model: string
@@ -128,7 +131,7 @@ describe('OpenCodeGoProvider', () => {
 
     const provider = new OpenCodeGoProvider('secret-key', 'claude-haiku-5-5')
     const controller = new AbortController()
-    await provider.complete([{ role: 'user', content: 'Hola' }], controller.signal)
+    await provider.complete([{ role: 'user', content: 'Hola' }], { signal: controller.signal })
 
     expect(fetchMock.mock.calls[0]?.[1]?.signal).toBe(controller.signal)
   })
@@ -145,7 +148,7 @@ describe('OpenCodeGoProvider', () => {
     controller.abort()
 
     await expect(
-      provider.complete([{ role: 'user', content: 'Hola' }], controller.signal),
+      provider.complete([{ role: 'user', content: 'Hola' }], { signal: controller.signal }),
     ).rejects.toBeTruthy()
   })
 
@@ -159,6 +162,80 @@ describe('OpenCodeGoProvider', () => {
     await provider.complete([{ role: 'user', content: 'Hola' }])
 
     expect(fetchMock.mock.calls[0]?.[0]).toBe('https://example.test/v1/chat/completions')
+  })
+
+  it('sends a normalized x-opencode-session header for a UUID sessionId', async () => {
+    const fetchMock = vi.fn<typeof fetch>(async () =>
+      new Response(JSON.stringify({ choices: [{ message: { content: 'ok' } }] }), { status: 200 }),
+    )
+    vi.stubGlobal('fetch', fetchMock)
+
+    const provider = new OpenCodeGoProvider('secret-key', 'claude-haiku-5-5')
+    await provider.complete([{ role: 'user', content: 'Hola' }], {
+      sessionId: '550E8400-E29B-41D4-A716-446655440000',
+    })
+
+    const headers = fetchMock.mock.calls[0]?.[1]?.headers as Record<string, string>
+    expect(headers['x-opencode-session']).toBe('ses_550e8400e29b41d4a716446655440000')
+  })
+
+  it('keeps the session header stable for the same sessionId and changes it for another', async () => {
+    const fetchMock = vi.fn<typeof fetch>(async () =>
+      new Response(JSON.stringify({ choices: [{ message: { content: 'ok' } }] }), { status: 200 }),
+    )
+    vi.stubGlobal('fetch', fetchMock)
+
+    const provider = new OpenCodeGoProvider('secret-key', 'claude-haiku-5-5')
+    const messages: ChatMessage[] = [{ role: 'user', content: 'Hola' }]
+
+    await provider.complete(messages, { sessionId: 'session-1' })
+    await provider.complete(messages, { sessionId: 'session-1' })
+    await provider.complete(messages, { sessionId: 'session-2' })
+
+    const headerAt = (index: number): string =>
+      (fetchMock.mock.calls[index]?.[1]?.headers as Record<string, string>)['x-opencode-session']
+
+    expect(headerAt(0)).toMatch(/^ses_[0-9a-f]{32}$/)
+    expect(headerAt(1)).toBe(headerAt(0))
+    expect(headerAt(2)).not.toBe(headerAt(0))
+  })
+
+  it('derives a deterministic 32-hex session header for a non-UUID sessionId', async () => {
+    const fetchMock = vi.fn<typeof fetch>(async () =>
+      new Response(JSON.stringify({ choices: [{ message: { content: 'ok' } }] }), { status: 200 }),
+    )
+    vi.stubGlobal('fetch', fetchMock)
+
+    const provider = new OpenCodeGoProvider('secret-key', 'claude-haiku-5-5')
+    const messages: ChatMessage[] = [{ role: 'user', content: 'Hola' }]
+
+    await provider.complete(messages, { sessionId: 'visitor-42' })
+    const first = (fetchMock.mock.calls[0]?.[1]?.headers as Record<string, string>)[
+      'x-opencode-session'
+    ]
+    await provider.complete(messages, { sessionId: 'visitor-42' })
+    const second = (fetchMock.mock.calls[1]?.[1]?.headers as Record<string, string>)[
+      'x-opencode-session'
+    ]
+
+    expect(first).toMatch(/^ses_[0-9a-f]{32}$/)
+    expect(second).toBe(first)
+    // Hashed, not the raw identifier.
+    expect(first).not.toContain('visitor-42')
+  })
+
+  it('honours CHAT_USER_AGENT over the default', async () => {
+    process.env.CHAT_USER_AGENT = 'digitaldevs-chatbot/9.9'
+    const fetchMock = vi.fn<typeof fetch>(async () =>
+      new Response(JSON.stringify({ choices: [{ message: { content: 'ok' } }] }), { status: 200 }),
+    )
+    vi.stubGlobal('fetch', fetchMock)
+
+    const provider = new OpenCodeGoProvider('secret-key', 'claude-haiku-5-5')
+    await provider.complete([{ role: 'user', content: 'Hola' }])
+
+    const headers = fetchMock.mock.calls[0]?.[1]?.headers as Record<string, string>
+    expect(headers['User-Agent']).toBe('digitaldevs-chatbot/9.9')
   })
 })
 

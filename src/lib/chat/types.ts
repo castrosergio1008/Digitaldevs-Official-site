@@ -9,6 +9,18 @@ export interface ChatMessage {
 }
 
 /**
+ * Per-call options for a provider completion.
+ *
+ * `sessionId` identifies the conversation and lets providers derive
+ * request-scoped headers (OpenCode Go requires `x-opencode-session`).
+ * `signal` aborts the upstream request.
+ */
+export interface ChatProviderOptions {
+  sessionId?: string
+  signal?: AbortSignal
+}
+
+/**
  * Abstraction over an AI provider so the route handler never depends on a
  * concrete vendor. The MVP implements `complete`; `stream` is reserved for a
  * future iteration (design doc section 4.8).
@@ -17,9 +29,9 @@ export interface ChatProvider {
   /** Provider identifier, e.g. "opencode-go" or "mock". */
   readonly name: string
   /** Returns the full assistant reply. */
-  complete(messages: ChatMessage[], signal?: AbortSignal): Promise<string>
+  complete(messages: ChatMessage[], options?: ChatProviderOptions): Promise<string>
   /** Optional streaming interface (Phase 2). */
-  stream?(messages: ChatMessage[], signal?: AbortSignal): AsyncIterable<string>
+  stream?(messages: ChatMessage[], options?: ChatProviderOptions): AsyncIterable<string>
 }
 
 /**

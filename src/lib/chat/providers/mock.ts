@@ -1,4 +1,4 @@
-import type { ChatMessage, ChatProvider } from '../types'
+import type { ChatMessage, ChatProvider, ChatProviderOptions } from '../types'
 
 /**
  * Deterministic provider for tests and local development. It recognises a few
@@ -8,7 +8,10 @@ import type { ChatMessage, ChatProvider } from '../types'
 export class MockProvider implements ChatProvider {
   readonly name = 'mock'
 
-  async complete(messages: ChatMessage[]): Promise<string> {
+  // `options` (sessionId/signal) is intentionally ignored: the mock is
+  // in-memory and deterministic, so it needs no request-scoped metadata.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async complete(messages: ChatMessage[], _options?: ChatProviderOptions): Promise<string> {
     const text = lastUserMessage(messages).toLowerCase()
 
     if (/(^|\s)(hola|buenas|buenos dias|buenos días|buenas tardes|buenas noches)\b/.test(text)) {
