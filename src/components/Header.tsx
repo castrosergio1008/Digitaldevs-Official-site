@@ -201,7 +201,7 @@ export default function Header() {
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
         <Link href="/" className="flex items-center gap-3" onClick={() => setOpen(false)}>
           <Image
-            src="/logo.png"
+            src="/og.png"
             alt="Logo de Digital-devs"
             width={40}
             height={40}

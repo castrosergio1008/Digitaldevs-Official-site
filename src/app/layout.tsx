@@ -35,8 +35,8 @@ export const metadata: Metadata = {
     images: [site.ogImage],
   },
   icons: {
-    icon: '/logo.png',
-    apple: '/logo.png',
+    icon: '/og.png',
+    apple: '/og.png',
   },
 }
 
@@ -62,7 +62,7 @@ const jsonLdOrganization = {
   url: site.url,
   logo: {
     '@type': 'ImageObject',
-    url: `${site.url}/logo.png`,
+    url: `${site.url}/og.png`,
   },
   areaServed: 'LATAM',
   address: { '@type': 'PostalAddress', addressLocality: 'Aguachica', addressRegion: 'Cesar', addressCountry: 'CO' },
