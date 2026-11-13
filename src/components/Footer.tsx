@@ -11,7 +11,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-5">
           <div className="lg:col-span-2">
             <div className="flex items-center gap-3">
-              <Image src="/og.png" alt="Logo Digital-devs" width={40} height={40} loading="lazy" className="h-10 w-10 rounded-lg object-cover" />
+              <Image src="/logodigital.png" alt="Logo Digital-devs" width={40} height={40} loading="lazy" className="h-10 w-10 rounded-lg object-cover" />
               <span className="text-lg font-bold tracking-tight text-fg">
                 Digital-<span className="text-primary">devs</span>
               </span>
