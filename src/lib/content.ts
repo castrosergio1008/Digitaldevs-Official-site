@@ -21,6 +21,8 @@ export const services: Service[] = [
     slug: 'sitios-web',
     title: 'Sitios web corporativos y landing pages',
     description: 'Páginas rápidas, modernas y orientadas a convertir visitantes en clientes. Diseño mobile-first y optimizadas para buscadores.',
+    metaTitle: 'Desarrollo de sitios web para pymes | Digital-devs',
+    metaDescription: 'Sitios web corporativos y landing pages rápidas, modernas y orientadas a convertir. Diseño mobile-first y SEO técnico para pymes en Colombia y LATAM.',
     points: ['Landing pages de alta conversión', 'Sitios institucionales para empresas y organizaciones', 'SEO técnico y metas optimizadas'],
   },
   {
@@ -28,6 +30,8 @@ export const services: Service[] = [
     slug: 'tiendas-en-linea',
     title: 'Tiendas en línea y e-commerce',
     description: 'Catálogos y pasarelas de pago integradas para vender 24/7 con una experiencia compra ágil y segura.',
+    metaTitle: 'Tiendas en línea y e-commerce | Digital-devs',
+    metaDescription: 'Catálogos y pasarelas de pago integradas para vender 24/7. Pagos con Mercado Pago y PayU, y panel de administración de pedidos.',
     points: ['Catálogo de productos y carrito', 'Pagos con Mercado Pago, PayU y más', 'Panel de administración de pedidos'],
   },
   {
@@ -35,6 +39,8 @@ export const services: Service[] = [
     slug: 'aplicaciones-web',
     title: 'Aplicaciones web a medida',
     description: 'Sistemas web desarrollados sobre tu proceso de negocio: paneles, CRMs, inventarios, control de gestión y más.',
+    metaTitle: 'Desarrollo de aplicaciones web a medida | Digital-devs',
+    metaDescription: 'Sistemas web a la medida de tu proceso: paneles, CRMs, inventarios y control de gestión con base de datos, API y autenticación segura.',
     points: ['Paneles de administración y dashboards', 'Módulos de gestión a la medida', 'Base de datos, API y autenticación segura'],
   },
   {
@@ -42,6 +48,8 @@ export const services: Service[] = [
     slug: 'mvp-para-startups',
     title: 'MVPs para startups y SaaS',
     description: 'De la idea a una primera versión funcional en semanas, para validar tu producto con usuarios reales antes de escalar.',
+    metaTitle: 'MVPs para startups y SaaS | Digital-devs',
+    metaDescription: 'De la idea a una primera versión funcional en semanas para validar tu producto con usuarios reales antes de escalar.',
     points: ['Prototipo y arquitectura definidos al inicio', 'Iteraciones rápidas y costo eficiente', 'Listo para crecer con tu negocio'],
   },
   {
@@ -49,6 +57,8 @@ export const services: Service[] = [
     slug: 'apps-progresivas',
     title: 'Progressive Web Apps (PWA)',
     description: 'Tu aplicación como una app móvil: instalable, con notificaciones y funcionando sin conexión, sin pasar por las tiendas.',
+    metaTitle: 'Progressive Web Apps (PWA) | Digital-devs',
+    metaDescription: 'Tu aplicación como una app móvil: instalable, con notificaciones y funcionando sin conexión, sin pasar por las tiendas.',
     points: ['Instalable en móvil y escritorio', 'Modo offline y carga instantánea', 'Notificaciones push'],
   },
   {
@@ -56,6 +66,8 @@ export const services: Service[] = [
     slug: 'soporte-mantenimiento',
     title: 'Soporte, mantenimiento y evolución',
     description: 'Tu web siempre al día: mejoras continuas, corrección de errores, seguridad, respaldos y acompañamiento cercano.',
+    metaTitle: 'Soporte y mantenimiento web | Digital-devs',
+    metaDescription: 'Tu web siempre al día: mejoras continuas, corrección de errores, seguridad, respaldos y acompañamiento cercano.',
     points: ['Mantenimiento preventivo y correctivo', 'Mejoras y nuevas funcionalidades', 'Monitoreo, respaldo y seguridad'],
   },
 ]

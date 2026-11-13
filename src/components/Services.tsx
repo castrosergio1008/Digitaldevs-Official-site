@@ -11,8 +11,8 @@ export default function Services() {
           Soluciones digitales para cada etapa de tu negocio
         </h2>
         <p className="mt-4 max-w-2xl text-muted">
-          Nos adaptamos a tu idea y a cualquier tecnología. Estos son los servicios que llevamos de la
-          idea a producción con acompañamiento cercano.
+          Software, automatización y analítica como socio de crecimiento. Servicios que llevamos de la
+          idea a producción con acompañamiento mensual.
         </p>
       </Reveal>
 

@@ -56,7 +56,7 @@ const jsonLdOrganization = {
   name: site.name,
   alternateName: 'Digital-devs Sitio Oficial',
   description:
-    'Empresa de desarrollo de software a la medida: sitios web, tiendas en línea y aplicaciones web.',
+    'Socio de crecimiento tecnológico para pymes: desarrollo de software a la medida, automatización de procesos y analítica.',
   email: site.email,
   url: site.url,
   logo: {
@@ -85,7 +85,7 @@ const jsonLdWebSite = {
   url: site.url,
   inLanguage: site.locale.replace('_', '-'),
   description:
-    'Desarrollo de software a la medida: sitios web corporativos, tiendas en línea, aplicaciones web y MVPs.',
+    'Desarrollo de software a la medida, automatización de procesos y analítica para pymes. Sitios web, tiendas en línea y aplicaciones web.',
   publisher: { '@id': `${site.url}/#organization` },
 }
 

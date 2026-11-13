@@ -22,13 +22,13 @@ export default function Hero() {
             </div>
 
             <h1 className="text-4xl font-bold leading-[1.06] tracking-tight sm:text-5xl lg:text-6xl">
-              Hacemos realidad{' '}
-              <span className="text-gradient">tus ideas</span>
+              Tu socio de crecimiento tecnológico:{' '}
+              <span className="text-gradient">software, automatización y analítica.</span>
             </h1>
 
             <p className="mt-6 max-w-xl text-base leading-relaxed text-muted sm:text-lg">
-              Sitios web corporativos, tiendas en línea y aplicaciones a la medida — del diseño al
-              despliegue en producción. Tecnología moderna, comunicación clara y entregas confiables.
+              Construimos el software, automatizamos los procesos repetitivos y medimos el impacto
+              comercial. Una sola cabeza para web, automatización, analítica y acompañamiento mensual.
             </p>
           </div>
 
