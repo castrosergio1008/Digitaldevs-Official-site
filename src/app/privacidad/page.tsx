@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   },
 }
 
-const LAST_UPDATED = '13 de noviembre de 2026'
+const LAST_UPDATED = '14 de noviembre de 2026'
 
 /**
  * Privacy policy page. The copy reflects the current data practices of
@@ -161,13 +161,17 @@ export default function PrivacidadPage() {
                   <strong className="font-semibold text-fg">Vercel</strong>, para el alojamiento del
                   sitio web y el procesamiento de las solicitudes.
                 </li>
+                <li>
+                  <strong className="font-semibold text-fg">Supabase</strong>, para el almacenamiento
+                  de los leads (nombre y contacto) y los eventos anónimos del chat.
+                </li>
+                <li>
+                  <strong className="font-semibold text-fg">Gmail / Google</strong>, para el envío de
+                  las notificaciones de nuevos leads al equipo.
+                </li>
               </ul>
               <p className="mt-3 text-muted">
-                Estos proveedores cuentan con sus propias políticas de privacidad. Cuando
-                Digital-devs active el almacenamiento de los leads en su sistema de notificación,
-                se añadirán <strong className="font-semibold text-fg">Supabase</strong> (base de
-                datos) y <strong className="font-semibold text-fg">Resend</strong> (correo de
-                notificación) a esta lista, y se informará a los titulares. No se realizan
+                Estos proveedores cuentan con sus propias políticas de privacidad. No se realizan
                 transferencias adicionales sin una base legal que lo permita.
               </p>
             </section>
@@ -233,12 +237,20 @@ export default function PrivacidadPage() {
                 navegador.
               </p>
               <p className="mt-3 text-muted">
-                El nombre y el contacto se utilizan para contactar al titular. Se conservan en el
-                navegador del visitante (localStorage) y se envían al servidor únicamente para
-                validarlos, sin almacenarse en una base de datos propia. No se utilizan con fines
-                distintos al contacto comercial. Cuando Digital-devs active el almacenamiento de
-                los leads en su sistema de notificación, esta sección se actualizará para informar
-                sobre la base de datos, el plazo de conservación y los derechos aplicables.
+                El nombre y el contacto se utilizan para contactar al titular y se almacenan en
+                nuestra base de datos (<strong className="font-semibold text-fg">Supabase</strong>,
+                PostgreSQL) para gestionar la solicitud. Se conservan durante{' '}
+                <strong className="font-semibold text-fg">12 meses</strong> desde su captura, o
+                hasta que el titular solicite su eliminación. Los eventos anónimos del chat (sin
+                datos personales) se conservan durante 90 días. Puedes ejercer tus derechos AARCO
+                (acceso, rectificación, supresión y oposición) escribiendo a{' '}
+                <a
+                  href={`mailto:${site.email}`}
+                  className="underline underline-offset-2 transition-colors hover:text-fg"
+                >
+                  {site.email}
+                </a>
+                .
               </p>
             </section>
 

@@ -127,34 +127,47 @@ const NOISE_MESSAGES = [
 ]
 
 /**
- * Builds the sentence that accompanies the lead in the WhatsApp hand-off. It
- * prefers the structured "Resumen:" the bot emits on a closing turn; otherwise
- * it falls back to the last user message plus the last assistant reply so the
- * advisor receives diagnostic context instead of a cold "Quiero que me
- * contacten.".
+ * Builds the clean diagnostic summary persisted with a lead and shown in the
+ * notification email. It carries no contact details: the contact already lives
+ * in its own column, so it is never duplicated into the free-text context
+ * (design doc section 4.5, "context limpio de PII").
+ *
+ * It prefers the structured "Resumen:" the bot emits on a closing turn;
+ * otherwise it falls back to the last user message plus the last assistant
+ * reply so the advisor receives diagnostic context instead of a cold "Quiero
+ * que me contacten.".
  */
-export function buildLeadContext(lead: LeadPayload, messages: ChatMessage[]): string {
+export function buildLeadSummary(messages: ChatMessage[]): string {
   const lastUserMessage = [...messages].reverse().find((message) => message.role === 'user')
   const lastAssistantMessage = [...messages].reverse().find((message) => message.role === 'assistant')
 
   const summary = redactContactInfo(lastUserMessage?.content.trim() || 'Quiero más información.')
-  const channel = lead.method === 'whatsapp' ? 'WhatsApp' : 'email'
   const rawAssistantText = lastAssistantMessage?.content.trim() ?? ''
   const assistantText = NOISE_MESSAGES.includes(rawAssistantText) ? '' : redactContactInfo(rawAssistantText)
 
   const structuredSummary = assistantText.match(SUMMARY_PATTERN)?.[1]?.trim()
   if (structuredSummary) {
-    return `Mi ${channel} es ${lead.contact.trim()}. Resumen: ${structuredSummary}`
+    return `Resumen: ${structuredSummary}`
   }
 
   if (assistantText) {
     const clipped = assistantText.slice(0, ASSISTANT_CONTEXT_LIMIT)
     const assistantContext =
       clipped.length < assistantText.length ? `${clipped}…` : clipped
-    return `Mi ${channel} es ${lead.contact.trim()}. Contexto: ${summary} | Asesor: ${assistantContext}`
+    return `Contexto: ${summary} | Asesor: ${assistantContext}`
   }
 
-  return `Mi ${channel} es ${lead.contact.trim()}. ${summary}`
+  return summary
+}
+
+/**
+ * Builds the sentence that accompanies the lead in the WhatsApp hand-off. It
+ * prefixes the clean summary with the visitor's own contact so the advisor
+ * gets the diagnostic context and the channel in one message.
+ */
+export function buildLeadContext(lead: LeadPayload, messages: ChatMessage[]): string {
+  const channel = lead.method === 'whatsapp' ? 'WhatsApp' : 'email'
+  return `Mi ${channel} es ${lead.contact.trim()}. ${buildLeadSummary(messages)}`
 }
 
 /**

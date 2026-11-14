@@ -1,0 +1,54 @@
+// Canonical data model for the chatbot leads + analytics (design doc section 4.7).
+//
+// NOTE: the shipped runtime persists through the Supabase REST API (PostgREST)
+// with zero ORM dependencies, so the app does not compile this file. It is the
+// canonical schema for teams that later adopt Prisma migrations
+// (`prisma migrate`) and must be kept in sync with `supabase/schema.sql`.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// Commercial lead captured by the chat widget.
+model Lead {
+  id            String   @id @default(uuid())
+  name          String
+  contact       String
+  /// "whatsapp" | "email" (enforced by a DB check constraint).
+  method        String
+  /// sha256(sessionId + pepper). Unique: one lead per session.
+  sessionIdHash String   @unique @map("session_id_hash")
+  /// "form" | "detection" | "chip".
+  source        String   @default("form")
+  /// Page route without query params.
+  path          String?
+  /// Clean diagnostic summary, no PII.
+  context       String?
+  notifiedAt    DateTime? @map("notified_at")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@index([createdAt(sort: Desc)])
+  @@index([sessionIdHash])
+  @@map("leads")
+}
+
+/// Anonymous chat event. Never contains PII.
+model ChatEvent {
+  id            BigInt   @id @default(autoincrement())
+  /// "chat_opened" | "lead_captured" | "whatsapp_clicked" | "diagnosis_completed" | "lead_attempt".
+  eventName     String   @map("event_name")
+  sessionIdHash String   @map("session_id_hash")
+  path          String?
+  /// Whitelisted metadata only.
+  metadata      Json
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@index([eventName, createdAt(sort: Desc)])
+  @@index([sessionIdHash])
+  @@map("chat_events")
+}

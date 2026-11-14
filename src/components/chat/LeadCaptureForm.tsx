@@ -71,8 +71,8 @@ export default function LeadCaptureForm({ disabled, onSubmitLead, onCancel }: Le
         </label>
         <input
           id="chat-lead-contact"
-          inputMode="email"
-          autoComplete="email"
+          inputMode="text"
+          autoComplete="off"
           value={contact}
           disabled={disabled}
           onChange={(event) => setContact(event.target.value)}
@@ -94,7 +94,8 @@ export default function LeadCaptureForm({ disabled, onSubmitLead, onCancel }: Le
         >
           política de privacidad
         </Link>
-        . Al dejar tus datos, aceptas ser contactado por Digital-devs.
+        . Al dejar tus datos, aceptas ser contactado por Digital-devs y que almacenemos tu nombre
+        y contacto en nuestro sistema (Supabase) para gestionar tu solicitud.
       </p>
 
       <div className="flex gap-2">

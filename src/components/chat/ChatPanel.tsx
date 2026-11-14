@@ -31,6 +31,8 @@ type ChatPanelProps = {
   onDismissLeadForm: () => void
   onConfirmHandoff: () => void
   onCancelHandoff: () => void
+  /** Tracks a WhatsApp hand-off click from the fallback links. */
+  onWhatsAppClick?: (source: 'form' | 'direct') => void
   onClear: () => void
   onClose: () => void
 }
@@ -56,6 +58,7 @@ export default function ChatPanel({
   onDismissLeadForm,
   onConfirmHandoff,
   onCancelHandoff,
+  onWhatsAppClick,
   onClear,
   onClose,
 }: ChatPanelProps) {
@@ -165,6 +168,7 @@ export default function ChatPanel({
                 href={site.whatsappLink}
                 target="_blank"
                 rel="noreferrer"
+                onClick={() => onWhatsAppClick?.('direct')}
                 className="mt-1 inline-flex items-center gap-1 font-semibold text-primary hover:underline"
               >
                 <MessageCircle className="h-3.5 w-3.5" aria-hidden="true" />
@@ -225,12 +229,13 @@ export default function ChatPanel({
             ¡Gracias, {lead.name}!
           </p>
           <p className="mt-1 text-muted">
-            Tus datos se guardaron solo en este navegador. Continúa la conversación en WhatsApp.
+            Tus datos se registraron correctamente. Continúa la conversación en WhatsApp.
           </p>
           <a
             href={leadLink}
             target="_blank"
             rel="noreferrer"
+            onClick={() => onWhatsAppClick?.('form')}
             className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-cta px-3 py-2 font-semibold text-white transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
           >
             <MessageCircle className="h-3.5 w-3.5" aria-hidden="true" />
@@ -240,8 +245,9 @@ export default function ChatPanel({
       )}
 
       <p className="px-4 pb-2 text-center text-[11px] leading-relaxed text-muted">
-        Esta conversación es procesada por IA. Tu nombre y contacto se usan solo para responderte
-        por WhatsApp. No escribas datos sensibles.
+        Esta conversación es procesada por IA. Tu nombre y contacto se usan para responderte por
+        WhatsApp y se guardan en nuestro sistema para gestionar tu solicitud. No escribas datos
+        sensibles.
       </p>
 
       <ChatInput disabled={typing} onSend={onSend} />

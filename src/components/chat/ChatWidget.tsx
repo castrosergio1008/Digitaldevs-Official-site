@@ -5,12 +5,15 @@ import type { ChatMessage, ChatResponse, LeadPayload } from '@/lib/chat/types'
 import { site } from '@/lib/site'
 import {
   buildLeadContext,
+  buildLeadSummary,
   buildWhatsAppLink,
   CHAT_GREETING,
   detectContactInfo,
   extractNameFromMessage,
   shouldDetectContact,
 } from '@/lib/chat/lead'
+import { trackEvent } from '@/lib/chat/analytics'
+import { persistLead } from '@/lib/chat/persistence'
 import {
   clearChatSession,
   createSessionId,
@@ -110,7 +113,18 @@ export default function ChatWidget() {
     }
     setError(null)
     setOpen(true)
-  }, [open, close])
+    trackEvent('chat_opened', { source: 'button' }, sessionId)
+  }, [open, close, sessionId])
+
+  // `diagnosis_completed` fires once when the lead form opens: the visitor has
+  // reached the point where the bot hands the conversation to a human.
+  const wasLeadFormOpen = useRef(false)
+  useEffect(() => {
+    if (leadFormOpen && !wasLeadFormOpen.current) {
+      trackEvent('diagnosis_completed', { reason: 'lead_form' }, sessionId)
+    }
+    wasLeadFormOpen.current = leadFormOpen
+  }, [leadFormOpen, sessionId])
 
   const sendMessage = useCallback(
     async (text: string) => {
@@ -153,6 +167,17 @@ export default function ChatWidget() {
           const data = (await response.json()) as ChatResponse
           if (data.sessionId) setSessionId(data.sessionId)
           const withReply = [...nextMessages, { role: 'assistant' as const, content: data.reply }]
+          // The bot signals the end of the diagnosis with a structured summary.
+          if (/Resumen:/i.test(data.reply)) {
+            trackEvent(
+              'diagnosis_completed',
+              {
+                reason: 'summary',
+                messageCount: withReply.length,
+              },
+              sessionId,
+            )
+          }
           if (detectedLead) {
             withReply.push({
               role: 'assistant',
@@ -175,14 +200,29 @@ export default function ChatWidget() {
 
   const confirmHandoff = useCallback(() => {
     if (!pendingHandoff) return
-    setLead(pendingHandoff)
+    const detected = pendingHandoff
+    setLead(detected)
     setPendingHandoff(null)
     window.open(
-      buildWhatsAppLink(pendingHandoff.name, buildLeadContext(pendingHandoff, messages)),
+      buildWhatsAppLink(detected.name, buildLeadContext(detected, messages)),
       '_blank',
       'noopener',
     )
-  }, [pendingHandoff, messages])
+    trackEvent('whatsapp_clicked', { source: 'detection' }, sessionId)
+
+    // Persist the detected lead in the background; the hand-off already left.
+    if (sessionId) {
+      void persistLead(
+        {
+          ...detected,
+          source: 'detection',
+          path: window.location.pathname,
+          context: buildLeadSummary(messages),
+        },
+        sessionId,
+      )
+    }
+  }, [pendingHandoff, messages, sessionId])
 
   const cancelHandoff = useCallback(() => {
     setPendingHandoff(null)
@@ -206,13 +246,13 @@ export default function ChatWidget() {
     }
     // Direct human hand-off without the form.
     window.open(site.whatsappLink, '_blank', 'noopener')
+    trackEvent('whatsapp_clicked', { source: 'direct' }, sessionId)
   }
 
-  const submitLead = async (payload: LeadPayload) => {
+  const submitLead = (payload: LeadPayload) => {
     setLead(payload)
     setLeadFormOpen(false)
     setPendingHandoff(null)
-    setTyping(true)
     setError(null)
 
     // Open WhatsApp while the submit user activation is still valid: browsers
@@ -223,28 +263,19 @@ export default function ChatWidget() {
       '_blank',
       'noopener',
     )
+    trackEvent('whatsapp_clicked', { source: 'form' }, sessionId)
 
-    try {
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          sessionId: sessionId || undefined,
-          messages,
-          lead: payload,
-        }),
-      })
-
-      if (response.ok) {
-        const data = (await response.json()) as ChatResponse
-        if (data.sessionId) setSessionId(data.sessionId)
-      } else {
-        setError(await readChatError(response))
-      }
-    } catch {
-      setError({ message: 'No pude conectarme. Revisa tu conexión e intenta de nuevo.' })
-    } finally {
-      setTyping(false)
+    // Persist the lead in the background; never block the hand-off on it.
+    if (sessionId) {
+      void persistLead(
+        {
+          ...payload,
+          source: 'form',
+          path: window.location.pathname,
+          context: buildLeadSummary(messages),
+        },
+        sessionId,
+      )
     }
   }
 
@@ -279,6 +310,7 @@ export default function ChatWidget() {
           onDismissLeadForm={() => setLeadFormOpen(false)}
           onConfirmHandoff={confirmHandoff}
           onCancelHandoff={cancelHandoff}
+          onWhatsAppClick={(source) => trackEvent('whatsapp_clicked', { source }, sessionId)}
           onClear={clearConversation}
           onClose={close}
         />

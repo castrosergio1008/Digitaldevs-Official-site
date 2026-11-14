@@ -8,7 +8,7 @@ import { DEFAULT_CHAT_MODEL, DEFAULT_CHAT_PROVIDER, getChatProvider } from '@/li
 import { checkRateLimit } from '@/lib/chat/ratelimit'
 import { redactContactInfo } from '@/lib/chat/lead'
 import { MAX_PAYLOAD_BYTES, parseChatRequest } from '@/lib/chat/validation'
-import { site } from '@/lib/site'
+import { getClientIp, isAllowedOrigin, json, readPositiveInt } from '@/lib/chat/http'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -16,71 +16,6 @@ export const maxDuration = 30
 
 // Keep some headroom under maxDuration for the provider round-trip.
 const PROVIDER_TIMEOUT_MS = 25_000
-
-function json(status: number, body: Record<string, unknown>): NextResponse {
-  return NextResponse.json(body, { status })
-}
-
-function firstForwardedValue(header: string | null): string | null {
-  const first = header?.split(',')[0]?.trim()
-  return first ? first : null
-}
-
-/**
- * Resolves the client IP for rate limiting. Vercel sets `x-real-ip` and
- * `x-vercel-forwarded-for` and they cannot be spoofed by the caller, so they
- * are trusted first; a client-supplied `x-forwarded-for` is only used when no
- * platform header is present.
- */
-function getClientIp(req: NextRequest): string {
-  return (
-    firstForwardedValue(req.headers.get('x-real-ip')) ??
-    firstForwardedValue(req.headers.get('x-vercel-forwarded-for')) ??
-    firstForwardedValue(req.headers.get('x-forwarded-for')) ??
-    'unknown'
-  )
-}
-
-/**
- * Returns the origins a legitimate request may come from: the origin the
- * request actually arrived at, plus the canonical site origin (preview
- * deployments and the marketing domain can differ).
- */
-function expectedOrigins(req: NextRequest): string[] {
-  const origins = new Set<string>([new URL(site.url).origin])
-  try {
-    origins.add(new URL(req.url).origin)
-  } catch {
-    // A malformed request URL cannot match anything; site.url still applies.
-  }
-  return [...origins]
-}
-
-/** Parses an Origin header value into a normalized origin, or null if invalid. */
-function parseOrigin(value: string): string | null {
-  try {
-    return new URL(value).origin
-  } catch {
-    return null
-  }
-}
-
-/**
- * Rejects cross-origin browser requests (CSRF). An absent Origin header is
- * accepted because non-browser clients (native apps, server-to-server) do not
- * send it. Opaque origins ("null") never match.
- */
-function isAllowedOrigin(req: NextRequest): boolean {
-  const origin = req.headers.get('origin')
-  if (!origin) return true
-  const candidate = parseOrigin(origin)
-  return candidate !== null && expectedOrigins(req).includes(candidate)
-}
-
-function readPositiveInt(value: string | undefined, fallback: number): number {
-  const parsed = Number.parseInt(value ?? '', 10)
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback
-}
 
 /** Returns the env var that holds the key a provider needs, or null for mock. */
 function requiredKeyForProvider(provider: string): string | null {
@@ -147,7 +82,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   const ip = getClientIp(req)
   const limitPerMin = readPositiveInt(process.env.CHAT_RATE_LIMIT_PER_MIN, 10)
   const limitPerDay = readPositiveInt(process.env.CHAT_RATE_LIMIT_PER_DAY, 100)
-  const rate = checkRateLimit(ip, limitPerMin, limitPerDay)
+  // Namespace the limiter so the chat budget is independent from the leads and
+  // events budgets (design doc section 3.2: "rate limit propio").
+  const rate = checkRateLimit(`chat:${ip}`, limitPerMin, limitPerDay)
   if (!rate.ok) {
     return json(429, { error: 'Demasiadas peticiones', retryAfter: rate.retryAfter })
   }
