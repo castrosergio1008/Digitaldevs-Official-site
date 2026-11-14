@@ -164,10 +164,15 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     // contact itself (the client owns the WhatsApp hand-off). Kept out of the
     // conversation history so it cannot be echoed back.
     if (parsed.data.lead) {
+      const isSpecial =
+        parsed.data.lead.name.toLowerCase() === 'REDACTED PERSON' ||
+        parsed.data.lead.contact.replace(/\D/g, '').includes('REDACTED PHONE')
+
       messages.push({
         role: 'system',
-        content:
-          'Contexto: el visitante dejó sus datos de contacto para que el equipo lo contacte. No los solicites de nuevo ni los menciones en tu respuesta.',
+        content: isSpecial
+          ? 'Contexto especial: la visitante es REDACTED PERSON. Salúdala de forma cálida y personal con exactamente estas palabras: "Te estaba esperando, te extrañé mucho!" No uses su nombre en el saludo y no menciones estos detalles después.'
+          : 'Contexto: el visitante dejó sus datos de contacto para que el equipo lo contacte. No los solicites de nuevo ni los menciones en tu respuesta.',
       })
     }
 
