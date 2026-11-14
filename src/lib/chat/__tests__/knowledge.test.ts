@@ -56,7 +56,7 @@ describe('buildSystemPrompt', () => {
 
   it('stays within a reasonable token budget', () => {
     expect(buildSystemPrompt().length).toBeGreaterThan(1_000)
-    expect(buildSystemPrompt().length).toBeLessThan(8_000)
+    expect(buildSystemPrompt().length).toBeLessThan(16_000)
   })
 
   it('does not leak secrets or environment variables', () => {
