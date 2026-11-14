@@ -33,6 +33,8 @@ export const GMAIL_SMTP_PORT = 465
 export const NOTIFY_TIMEOUT_MS = 10_000
 export const DEFAULT_WHATSAPP_API_VERSION = 'v21.0'
 export const DEFAULT_WHATSAPP_TEMPLATE_LANGUAGE = 'es'
+/** Approved template name in the client's Meta Business account. */
+export const DEFAULT_WHATSAPP_TEMPLATE_NAME = 'digitaldevs'
 
 /**
  * Email notification through the Resend API. The request carries the lead

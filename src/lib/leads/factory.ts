@@ -6,6 +6,7 @@ import {
   DEFAULT_RESEND_FROM,
   DEFAULT_WHATSAPP_API_VERSION,
   DEFAULT_WHATSAPP_TEMPLATE_LANGUAGE,
+  DEFAULT_WHATSAPP_TEMPLATE_NAME,
   GMAIL_SMTP_HOST,
   GMAIL_SMTP_PORT,
   CompositeNotifier,
@@ -116,8 +117,8 @@ export function getNotifier(): LeadNotifier {
     const accessToken = process.env.WHATSAPP_ACCESS_TOKEN
     const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID
     const to = process.env.WHATSAPP_NOTIFY_NUMBER
-    const templateName = process.env.WHATSAPP_TEMPLATE_NAME
-    if (!accessToken || !phoneNumberId || !to || !templateName) {
+    const templateName = process.env.WHATSAPP_TEMPLATE_NAME ?? DEFAULT_WHATSAPP_TEMPLATE_NAME
+    if (!accessToken || !phoneNumberId || !to) {
       // Isolate the channel: a WhatsApp misconfiguration must never take down
       // the primary email notification.
       console.error(
