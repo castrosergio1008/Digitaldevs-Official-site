@@ -1015,3 +1015,28 @@ días y decidir si se mantiene, se amplía o se migra de proveedor.
 - `.github/workflows/ci.yml`: CI con lint, typecheck, unit tests, build y e2e.
 - `vitest.config.ts`: tests unitarios de puros (sin DOM); `playwright.config.ts`: e2e con build real.
 - `package.json`: Next 15.5, React 19, Tailwind v4, Vitest y Playwright (sin dependencias nuevas).
+
+---
+
+## Anexo E: Actualización 2026-11-13 (optimización de conversión)
+
+Después de la evaluación de conversión de `forge-marketing` (ATLAS), se aplicaron cambios de
+copy/prompt y de contexto de WhatsApp. Este documento histórico se conserva como registro del
+diseño original; los cambios realizados fueron:
+
+- **Chips rediseñados** (`src/components/chat/QuickReplies.tsx`): "Tengo pedidos que se me
+  pierden", "Quiero una cotización para mi negocio", "Agendar una llamada de 15 minutos",
+  "Hablar con un asesor". Se eliminaron "¿Qué servicios ofrecen?" y "¿Cuánto cuesta?" (anclaban
+  precio sin capturar lead).
+- **Contexto de WhatsApp enriquecido** (`src/lib/chat/lead.ts`): `buildLeadContext` ahora usa el
+  "Resumen:" estructurado del bot o el último mensaje del asesor + el del usuario, en lugar de solo
+  el último mensaje frío.
+- **Prompt** (`src/lib/chat/knowledge.ts`): se añadieron instrucciones de cierre concreto y de
+  resumen de cierre; se corrigió el typo "wrowth partner" → "socio de crecimiento".
+- **`site.whatsappLink`** (`src/lib/site.ts`): se corrigió el texto falso "Los contacté desde
+  Google Maps" por un mensaje genérico y honesto.
+- **Detección de contacto endurecida** (`src/lib/chat/lead.ts`): `shouldDetectContact` requiere
+  frases con intención clara; `detectContactInfo` exige mínimo 8 dígitos para WhatsApp.
+- **PII eliminada del código** (`src/app/api/chat/route.ts`): se quitó el saludo especial
+  hardcodeado para una persona concreta. Ver la revisión de `forge-sentinel` sobre el historial
+  público de git.

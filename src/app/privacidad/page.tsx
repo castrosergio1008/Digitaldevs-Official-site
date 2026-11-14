@@ -121,7 +121,7 @@ export default function PrivacidadPage() {
                 </li>
                 <li>
                   Contactar al titular con fines comerciales cuando él mismo lo solicita, por
-                  ejemplo con la opción «Quiero que me contacten».
+                  ejemplo al agendar una llamada o dejar sus datos en el chat.
                 </li>
                 <li>Mejorar el servicio y la calidad de las respuestas del asistente virtual.</li>
                 <li>Cumplir las obligaciones legales y de seguridad aplicables.</li>

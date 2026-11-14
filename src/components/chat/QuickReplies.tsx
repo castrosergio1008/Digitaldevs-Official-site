@@ -12,13 +12,18 @@ export interface QuickReply {
 
 export const QUICK_REPLIES: QuickReply[] = [
   {
-    id: 'services',
-    label: '¿Qué servicios ofrecen?',
+    id: 'pain',
+    label: 'Tengo pedidos que se me pierden',
     action: 'message',
-    message: '¿Qué servicios ofrecen?',
+    message: 'Tengo pedidos que se me pierden por respuesta lenta',
   },
-  { id: 'pricing', label: '¿Cuánto cuesta?', action: 'message', message: '¿Cuánto cuesta?' },
-  { id: 'contact', label: 'Quiero que me contacten', action: 'lead' },
+  {
+    id: 'quote',
+    label: 'Quiero una cotización para mi negocio',
+    action: 'message',
+    message: 'Quiero una cotización para mi negocio',
+  },
+  { id: 'schedule', label: 'Agendar una llamada de 15 minutos', action: 'lead' },
   { id: 'advisor', label: 'Hablar con un asesor', action: 'advisor' },
 ]
 

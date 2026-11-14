@@ -86,6 +86,59 @@ describe('buildLeadContext', () => {
     expect(buildLeadContext(lead, [])).toContain('email')
     expect(buildLeadContext(lead, [])).toContain('ana@example.com')
   })
+
+  it('uses the structured "Resumen:" from the assistant when present', () => {
+    const lead = { name: 'Ana', contact: '3001234567', method: 'whatsapp' as const }
+    const messages: ChatMessage[] = [
+      { role: 'user', content: 'Pierdo pedidos por respuesta lenta' },
+      {
+        role: 'assistant',
+        content: 'Resumen: pedidos perdidos → Automatización de Procesos ($2.800.000+)',
+      },
+    ]
+
+    const context = buildLeadContext(lead, messages)
+    expect(context).toContain('Resumen: pedidos perdidos → Automatización de Procesos')
+    expect(context).not.toContain('Contexto:')
+  })
+
+  it('adds the assistant reply as context when there is no structured summary', () => {
+    const lead = { name: 'Ana', contact: '3001234567', method: 'whatsapp' as const }
+    const messages: ChatMessage[] = [
+      { role: 'user', content: 'Tengo 40 pedidos al día' },
+      { role: 'assistant', content: '¿Cuántos pierdes por no responder a tiempo?' },
+    ]
+
+    const context = buildLeadContext(lead, messages)
+    expect(context).toContain('Contexto: Tengo 40 pedidos al día')
+    expect(context).toContain('Asesor: ¿Cuántos pierdes por no responder a tiempo?')
+  })
+
+  it('skips the greeting and keeps only the user message', () => {
+    const lead = { name: 'Ana', contact: '3001234567', method: 'whatsapp' as const }
+    const messages: ChatMessage[] = [
+      { role: 'assistant', content: '¡Hola! Soy el asistente virtual de Digital-devs. ¿En qué puedo ayudar hoy?' },
+      { role: 'user', content: 'Quiero información' },
+    ]
+
+    const context = buildLeadContext(lead, messages)
+    expect(context).toBe('Mi WhatsApp es 3001234567. Quiero información')
+    expect(context).not.toContain('Asesor:')
+  })
+
+  it('clips a long assistant reply with an ellipsis', () => {
+    const lead = { name: 'Ana', contact: '3001234567', method: 'whatsapp' as const }
+    const longReply = 'a'.repeat(300)
+    const messages: ChatMessage[] = [
+      { role: 'user', content: 'Hola' },
+      { role: 'assistant', content: longReply },
+    ]
+
+    const context = buildLeadContext(lead, messages)
+    expect(context).toContain('Asesor: ')
+    expect(context).toContain('…')
+    expect(context.length).toBeLessThan(longReply.length + 100)
+  })
 })
 
 describe('buildWhatsAppLink', () => {
@@ -116,9 +169,17 @@ describe('shouldDetectContact', () => {
     expect(shouldDetectContact('Quiero que me contacten')).toBe(true)
   })
 
+  it('accepts common variants that clearly share contact details', () => {
+    expect(shouldDetectContact('Mi número: 3001234567')).toBe(true)
+    expect(shouldDetectContact('Escríbeme al 3001234567')).toBe(true)
+    expect(shouldDetectContact('Me pueden contactar al 3001234567')).toBe(true)
+    expect(shouldDetectContact('Dejó mi correo: ana@example.com')).toBe(true)
+  })
+
   it('returns false when there is no contact intent', () => {
     expect(shouldDetectContact('Hola, ¿qué servicios ofrecen?')).toBe(false)
     expect(shouldDetectContact('Tengo 3001234567 dólares para invertir')).toBe(false)
+    expect(shouldDetectContact('El número de pedidos subió')).toBe(false)
     expect(shouldDetectContact('')).toBe(false)
   })
 })

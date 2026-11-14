@@ -98,10 +98,10 @@ test.describe('chat widget', () => {
     await page.goto('/', { waitUntil: 'networkidle' })
 
     const panel = await openChat(page)
-    await panel.getByRole('button', { name: '¿Cuánto cuesta?' }).click()
+    await panel.getByRole('button', { name: 'Quiero una cotización para mi negocio' }).click()
 
     const log = panel.getByRole('log', { name: 'Conversación' })
-    await expect(log.getByText('¿Cuánto cuesta?')).toBeVisible()
+    await expect(log.getByText('Quiero una cotización para mi negocio')).toBeVisible()
     await expect(log.getByText(MOCK_REPLY)).toBeVisible()
   })
 
@@ -109,7 +109,7 @@ test.describe('chat widget', () => {
     await page.goto('/', { waitUntil: 'networkidle' })
 
     const panel = await openChat(page)
-    await panel.getByRole('button', { name: 'Quiero que me contacten' }).click()
+    await panel.getByRole('button', { name: 'Agendar una llamada de 15 minutos' }).click()
 
     const form = panel.getByRole('form', { name: 'Formulario de contacto' })
     await expect(form).toBeVisible()
@@ -132,7 +132,7 @@ test.describe('chat widget', () => {
     await page.goto('/', { waitUntil: 'networkidle' })
 
     const panel = await openChat(page)
-    await panel.getByRole('button', { name: 'Quiero que me contacten' }).click()
+    await panel.getByRole('button', { name: 'Agendar una llamada de 15 minutos' }).click()
 
     const form = panel.getByRole('form', { name: 'Formulario de contacto' })
     await form.getByLabel('Nombre').fill('Ana Pérez')

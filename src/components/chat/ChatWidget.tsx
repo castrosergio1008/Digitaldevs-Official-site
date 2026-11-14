@@ -6,6 +6,7 @@ import { site } from '@/lib/site'
 import {
   buildLeadContext,
   buildWhatsAppLink,
+  CHAT_GREETING,
   detectContactInfo,
   extractNameFromMessage,
   shouldDetectContact,
@@ -23,7 +24,7 @@ import type { QuickReply } from './QuickReplies'
 
 const GREETING: ChatMessage = {
   role: 'assistant',
-  content: '¡Hola! Soy el asistente virtual de Digital-devs. ¿En qué puedo ayudar hoy?',
+  content: CHAT_GREETING,
 }
 
 /** Maps an `/api/chat` failure to a friendly, user-facing message. */

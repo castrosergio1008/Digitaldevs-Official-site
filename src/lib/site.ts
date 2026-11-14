@@ -30,7 +30,7 @@ export const site = {
   whatsapp: '+57 311 360 9710',
   whatsappBase: 'https://wa.me/573113609710',
   whatsappLink:
-    'https://wa.me/573113609710?text=Hola%21%20Los%20contact%C3%A9%20desde%20Google%20Maps.%20Me%20interesa%20informaci%C3%B3n%20sobre%20sus%20servicios%20de%20desarrollo%20web.',
+    'https://wa.me/573113609710?text=Hola%20Digital-devs%21%20Me%20interesa%20informaci%C3%B3n%20sobre%20sus%20servicios.%20%C2%BFC%C3%B3mo%20me%20cuentan%20m%C3%A1s%3F',
   city: 'Aguachica, Colombia',
   year: new Date().getFullYear(),
 } as const
