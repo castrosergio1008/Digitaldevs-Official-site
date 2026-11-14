@@ -159,7 +159,6 @@ describe('WhatsAppNotifier', () => {
       'Ana Pérez',
       '3001234567',
       'Formulario del chat',
-      '2026-11-13 14:32 (UTC-5)',
     ])
   })
 

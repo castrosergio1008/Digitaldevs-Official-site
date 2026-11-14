@@ -129,8 +129,8 @@ export class GmailNotifier implements LeadNotifier {
 /**
  * Optional WhatsApp notification through the Meta Cloud API. It sends an
  * approved template message (proactive notification), so the client must
- * configure a template whose body variables are, in order: name, contact,
- * source and date. Disabled by default (`LEAD_NOTIFY_WHATSAPP_ENABLED=false`).
+ * configure a template whose body variables are, in order: name, contact and
+ * source. Disabled by default (`LEAD_NOTIFY_WHATSAPP_ENABLED=false`).
  */
 export class WhatsAppNotifier implements LeadNotifier {
   private readonly accessToken: string
@@ -182,7 +182,6 @@ export class WhatsAppNotifier implements LeadNotifier {
                 { type: 'text', text: lead.name },
                 { type: 'text', text: lead.contact },
                 { type: 'text', text: sourceLabel(lead.source) },
-                { type: 'text', text: formatLeadDate(lead.createdAt) },
               ],
             },
           ],
