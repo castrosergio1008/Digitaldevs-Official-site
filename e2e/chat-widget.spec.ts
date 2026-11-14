@@ -203,4 +203,69 @@ test.describe('chat widget', () => {
     await expect(log.getByText(MOCK_REPLY)).toHaveCount(0)
     await expect(log.getByText(/asistente virtual de Digital-devs/)).toBeVisible()
   })
+
+  test('free-text contact detection asks for confirmation instead of auto-opening WhatsApp', async ({
+    page,
+  }) => {
+    await mockChat(page)
+    await page.goto('/', { waitUntil: 'networkidle' })
+
+    const panel = await openChat(page)
+    const input = panel.getByRole('textbox', { name: 'Escribe tu mensaje' })
+
+    // No popup should open automatically.
+    const popupPromise = page.waitForEvent('popup', { timeout: 1_500 }).catch(() => null)
+    await input.fill('Mi número es 3001234567')
+    await input.press('Enter')
+
+    await expect(panel.getByText('¿Continuar a WhatsApp?')).toBeVisible()
+    expect(await popupPromise).toBeNull()
+
+    // Cancelar closes the card and does not open WhatsApp.
+    await panel.getByRole('button', { name: 'Cancelar' }).click()
+    await expect(panel.getByText('¿Continuar a WhatsApp?')).toHaveCount(0)
+  })
+
+  test('confirming the hand-off opens WhatsApp with the detected contact', async ({ page }) => {
+    await mockChat(page)
+    await page.goto('/', { waitUntil: 'networkidle' })
+
+    const panel = await openChat(page)
+    const input = panel.getByRole('textbox', { name: 'Escribe tu mensaje' })
+
+    await input.fill('Mi número es 3001234567')
+    await input.press('Enter')
+    await expect(panel.getByText('¿Continuar a WhatsApp?')).toBeVisible()
+
+    const popupPromise = page.waitForEvent('popup', { timeout: 3_000 }).catch(() => null)
+    await panel.getByRole('button', { name: 'Sí, continuar' }).click()
+
+    const popup = await popupPromise
+    expect(popup).not.toBeNull()
+    await expect.poll(() => popup!.url()).toContain('573113609710')
+    await expect.poll(() => waPayload(popup!.url())).toContain('3001234567')
+  })
+
+  test('form submission clears a pending hand-off confirmation', async ({ page }) => {
+    await mockChat(page)
+    await page.goto('/', { waitUntil: 'networkidle' })
+
+    const panel = await openChat(page)
+    const input = panel.getByRole('textbox', { name: 'Escribe tu mensaje' })
+
+    // Trigger the pending hand-off via free text.
+    await input.fill('Mi número es 3001234567')
+    await input.press('Enter')
+    await expect(panel.getByText('¿Continuar a WhatsApp?')).toBeVisible()
+
+    // Now use the form instead.
+    await panel.getByRole('button', { name: 'Agendar una llamada de 15 minutos' }).click()
+    const form = panel.getByRole('form', { name: 'Formulario de contacto' })
+    await form.getByLabel('Nombre').fill('Ana Pérez')
+    await form.getByLabel('WhatsApp o email').fill('3009876543')
+    await form.getByRole('button', { name: 'Enviar a WhatsApp' }).click()
+
+    // The confirmation card must be gone.
+    await expect(panel.getByText('¿Continuar a WhatsApp?')).toHaveCount(0)
+  })
 })

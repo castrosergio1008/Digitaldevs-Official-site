@@ -66,6 +66,7 @@ export default function ChatWidget() {
   const [lead, setLead] = useState<LeadPayload | null>(null)
   const [typing, setTyping] = useState(false)
   const [leadFormOpen, setLeadFormOpen] = useState(false)
+  const [pendingHandoff, setPendingHandoff] = useState<LeadPayload | null>(null)
   const [error, setError] = useState<ChatError | null>(null)
   const [hydrated, setHydrated] = useState(false)
   const buttonRef = useRef<HTMLButtonElement | null>(null)
@@ -89,6 +90,12 @@ export default function ChatWidget() {
     if (!hydrated || !sessionId) return
     saveChatSession({ id: sessionId, messages, lead: lead ?? undefined, updatedAt: Date.now() })
   }, [hydrated, sessionId, messages, lead])
+
+  // A captured lead always wins over a pending hand-off: clear the
+  // confirmation card so it cannot overwrite the form lead later.
+  useEffect(() => {
+    if (lead) setPendingHandoff(null)
+  }, [lead])
 
   const close = useCallback(() => {
     setOpen(false)
@@ -115,8 +122,8 @@ export default function ChatWidget() {
       setError(null)
 
       // Detect contact info in the user's message. When found and no lead has
-      // been captured yet, open WhatsApp immediately (within the user-activation
-      // window) so the conversation continues there without a link click.
+      // been captured yet, ask for explicit confirmation before opening
+      // WhatsApp (the visitor must know their data is being handed off).
       let detectedLead: LeadPayload | null = null
       if (!lead && shouldDetectContact(text)) {
         const detected = detectContactInfo(text)
@@ -126,14 +133,8 @@ export default function ChatWidget() {
             contact: detected.contact,
             method: detected.method,
           }
-          setLead(detectedLead)
+          setPendingHandoff(detectedLead)
           setLeadFormOpen(false)
-
-          window.open(
-            buildWhatsAppLink(detectedLead.name, buildLeadContext(detectedLead, nextMessages)),
-            '_blank',
-            'noopener',
-          )
         }
       }
 
@@ -144,7 +145,7 @@ export default function ChatWidget() {
           body: JSON.stringify({
             sessionId: sessionId || undefined,
             messages: nextMessages,
-            lead: lead ?? detectedLead ?? undefined,
+            lead: lead ?? undefined,
           }),
         })
 
@@ -156,7 +157,7 @@ export default function ChatWidget() {
             withReply.push({
               role: 'assistant',
               content:
-                '¡Listo! Ya abrí WhatsApp para que continúes la conversación con nuestro equipo. Si no se abrió, revisa las ventanas o pestañas de tu navegador.',
+                'Encontré tus datos en tu mensaje. Antes de abrir WhatsApp, confírmame que quieres que continúe.',
             })
           }
           setMessages(trimMessages(withReply))
@@ -171,6 +172,21 @@ export default function ChatWidget() {
     },
     [typing, messages, sessionId, lead],
   )
+
+  const confirmHandoff = useCallback(() => {
+    if (!pendingHandoff) return
+    setLead(pendingHandoff)
+    setPendingHandoff(null)
+    window.open(
+      buildWhatsAppLink(pendingHandoff.name, buildLeadContext(pendingHandoff, messages)),
+      '_blank',
+      'noopener',
+    )
+  }, [pendingHandoff, messages])
+
+  const cancelHandoff = useCallback(() => {
+    setPendingHandoff(null)
+  }, [])
 
   const handleQuickReply = (reply: QuickReply) => {
     if (typing) return
@@ -195,6 +211,7 @@ export default function ChatWidget() {
   const submitLead = async (payload: LeadPayload) => {
     setLead(payload)
     setLeadFormOpen(false)
+    setPendingHandoff(null)
     setTyping(true)
     setError(null)
 
@@ -237,6 +254,7 @@ export default function ChatWidget() {
     setMessages([GREETING])
     setLead(null)
     setLeadFormOpen(false)
+    setPendingHandoff(null)
     setError(null)
     setTyping(false)
   }
@@ -254,10 +272,13 @@ export default function ChatWidget() {
           leadLink={leadLink}
           error={error}
           leadFormOpen={leadFormOpen}
+          pendingHandoff={pendingHandoff}
           onSend={(text) => void sendMessage(text)}
           onQuickReply={handleQuickReply}
           onSubmitLead={(payload) => void submitLead(payload)}
           onDismissLeadForm={() => setLeadFormOpen(false)}
+          onConfirmHandoff={confirmHandoff}
+          onCancelHandoff={cancelHandoff}
           onClear={clearConversation}
           onClose={close}
         />

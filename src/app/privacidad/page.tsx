@@ -22,8 +22,8 @@ export const metadata: Metadata = {
 const LAST_UPDATED = '13 de noviembre de 2026'
 
 /**
- * Privacy policy page. The legal copy is a draft: it must be reviewed by a
- * lawyer before publication (see the notice rendered at the top of the page).
+ * Privacy policy page. The copy reflects the current data practices of
+ * Digital-devs; periodic legal review is recommended.
  */
 export default function PrivacidadPage() {
   return (
@@ -49,18 +49,6 @@ export default function PrivacidadPage() {
         </section>
 
         <section className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:py-16">
-          {/* Draft banner: the legal text is not final and needs legal review. */}
-          <div
-            role="note"
-            className="mb-10 rounded-2xl border border-amber-500/40 bg-amber-500/10 p-5"
-          >
-            <p className="text-sm font-semibold text-fg">Borrador sujeto a revisión jurídica</p>
-            <p className="mt-1 text-sm leading-relaxed text-muted">
-              Este documento es un borrador interno y no constituye asesoría legal. Debe ser
-              revisado y aprobado por un abogado antes de su publicación definitiva.
-            </p>
-          </div>
-
           <div className="space-y-10">
             <section>
               <h2 className="text-xl font-bold text-fg">1. Responsable del tratamiento</h2>
@@ -162,14 +150,24 @@ export default function PrivacidadPage() {
                 <li>
                   <strong className="font-semibold text-fg">OpenCode Go</strong>, para el
                   procesamiento de la conversación con el asistente virtual (inteligencia artificial).
+                  Los datos de contacto escritos en el chat se redactan antes de llegar a este
+                  proveedor.
                 </li>
                 <li>
                   <strong className="font-semibold text-fg">WhatsApp / Meta</strong>, para el
                   contacto comercial con el titular.
                 </li>
+                <li>
+                  <strong className="font-semibold text-fg">Vercel</strong>, para el alojamiento del
+                  sitio web y el procesamiento de las solicitudes.
+                </li>
               </ul>
               <p className="mt-3 text-muted">
-                Estos proveedores cuentan con sus propias políticas de privacidad. No se realizan
+                Estos proveedores cuentan con sus propias políticas de privacidad. Cuando
+                Digital-devs active el almacenamiento de los leads en su sistema de notificación,
+                se añadirán <strong className="font-semibold text-fg">Supabase</strong> (base de
+                datos) y <strong className="font-semibold text-fg">Resend</strong> (correo de
+                notificación) a esta lista, y se informará a los titulares. No se realizan
                 transferencias adicionales sin una base legal que lo permita.
               </p>
             </section>
@@ -235,9 +233,12 @@ export default function PrivacidadPage() {
                 navegador.
               </p>
               <p className="mt-3 text-muted">
-                El nombre y el contacto solo se utilizan para contactar al titular y no se
-                almacenan en una base de datos propia. Los datos se conservan únicamente el tiempo
-                necesario para cumplir la finalidad del tratamiento.
+                El nombre y el contacto se utilizan para contactar al titular. Se conservan en el
+                navegador del visitante (localStorage) y se envían al servidor únicamente para
+                validarlos, sin almacenarse en una base de datos propia. No se utilizan con fines
+                distintos al contacto comercial. Cuando Digital-devs active el almacenamiento de
+                los leads en su sistema de notificación, esta sección se actualizará para informar
+                sobre la base de datos, el plazo de conservación y los derechos aplicables.
               </p>
             </section>
 
@@ -247,6 +248,7 @@ export default function PrivacidadPage() {
                 <li>Transmisión cifrada mediante HTTPS.</li>
                 <li>Acceso restringido a la información por parte del responsable.</li>
                 <li>Minimización de datos: solo se recoge lo indispensable.</li>
+                <li>Redacción de los datos de contacto antes de enviar la conversación al proveedor de IA.</li>
                 <li>Sin registro de datos personales en los logs del chat.</li>
               </ul>
               <p className="mt-3 text-muted">

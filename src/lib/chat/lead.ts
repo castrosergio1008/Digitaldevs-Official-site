@@ -64,6 +64,53 @@ export function validateLead(draft: LeadDraft): LeadValidationResult {
 /** Matches the structured closing summary the bot is instructed to emit. */
 const SUMMARY_PATTERN = /Resumen:\s*([^\n]+)/i
 
+/** Matches email addresses anywhere in a string (global). */
+const EMAIL_GLOBAL_PATTERN = /[^\s@]+@[^\s@]+\.[^\s@]+/g
+
+/** Matches phone-like tokens (optional country code, separators, parens, slashes). */
+const PHONE_GLOBAL_PATTERN = /\(?\+?\d[\d\s.\-()/]{5,}\d\)?/g
+
+/** Matches currency amounts so they are not mistaken for phone numbers. */
+const CURRENCY_PATTERN = /(?:\$|COP|USD)\s*[\d.,]+/g
+
+/** Matches ISO dates (YYYY-MM-DD) so they are not mistaken for phones. */
+const DATE_PATTERN = /\b\d{4}-\d{2}-\d{2}\b/g
+
+const REDACTION = '[redactado]'
+
+/**
+ * Redacts emails and phone numbers from a text before it is sent to the AI
+ * provider. The visitor's contact is only needed for the WhatsApp hand-off,
+ * never for the model. Currency amounts, dates and plain quantities that are
+ * not phone-like are preserved.
+ */
+export function redactContactInfo(text: string): string {
+  const protectedTokens: string[] = []
+
+  const protect = (input: string, pattern: RegExp): string =>
+    input.replace(pattern, (match) => {
+      protectedTokens.push(match)
+      return `\u0000${protectedTokens.length - 1}\u0000`
+    })
+
+  // 1. Protect currency amounts and dates so the phone pattern ignores them.
+  let working = protect(text, CURRENCY_PATTERN)
+  working = protect(working, DATE_PATTERN)
+
+  // 2. Redact emails and phone-like tokens. A bare digit run is only redacted
+  //    when it is long enough to be a phone (10+ digits) or has separators.
+  working = working.replace(EMAIL_GLOBAL_PATTERN, REDACTION)
+  working = working.replace(PHONE_GLOBAL_PATTERN, (match) => {
+    const digits = match.replace(/\D/g, '')
+    const hasSeparator = /[\s.\-()]/.test(match)
+    const looksLikePhone = digits.length >= 7 && digits.length <= 15 && (hasSeparator || digits.length >= 10)
+    return looksLikePhone ? REDACTION : match
+  })
+
+  // 3. Restore the protected tokens.
+  return working.replace(/\u0000(\d+)\u0000/g, (_, index) => protectedTokens[Number(index)] ?? '')
+}
+
 /**
  * Shared widget greeting. Exported so the chat widget and the lead context
  * builder stay in sync; it carries no diagnostic value.
@@ -72,6 +119,12 @@ export const CHAT_GREETING = '¡Hola! Soy el asistente virtual de Digital-devs. 
 
 /** Maximum characters kept from the assistant reply when used as context. */
 const ASSISTANT_CONTEXT_LIMIT = 200
+
+/** Assistant turns that carry no diagnostic value for the WhatsApp hand-off. */
+const NOISE_MESSAGES = [
+  CHAT_GREETING,
+  'Encontré tus datos en tu mensaje. Antes de abrir WhatsApp, confírmame que quieres que continúe.',
+]
 
 /**
  * Builds the sentence that accompanies the lead in the WhatsApp hand-off. It
@@ -84,16 +137,17 @@ export function buildLeadContext(lead: LeadPayload, messages: ChatMessage[]): st
   const lastUserMessage = [...messages].reverse().find((message) => message.role === 'user')
   const lastAssistantMessage = [...messages].reverse().find((message) => message.role === 'assistant')
 
-  const summary = lastUserMessage?.content.trim() || 'Quiero más información.'
+  const summary = redactContactInfo(lastUserMessage?.content.trim() || 'Quiero más información.')
   const channel = lead.method === 'whatsapp' ? 'WhatsApp' : 'email'
-  const assistantText = lastAssistantMessage?.content.trim() ?? ''
+  const rawAssistantText = lastAssistantMessage?.content.trim() ?? ''
+  const assistantText = NOISE_MESSAGES.includes(rawAssistantText) ? '' : redactContactInfo(rawAssistantText)
 
   const structuredSummary = assistantText.match(SUMMARY_PATTERN)?.[1]?.trim()
   if (structuredSummary) {
     return `Mi ${channel} es ${lead.contact.trim()}. Resumen: ${structuredSummary}`
   }
 
-  if (assistantText && assistantText !== CHAT_GREETING) {
+  if (assistantText) {
     const clipped = assistantText.slice(0, ASSISTANT_CONTEXT_LIMIT)
     const assistantContext =
       clipped.length < assistantText.length ? `${clipped}…` : clipped

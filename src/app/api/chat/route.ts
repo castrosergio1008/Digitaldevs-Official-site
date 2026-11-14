@@ -6,6 +6,7 @@ import { CHAT_FALLBACK_REPLY } from '@/lib/chat/fallback'
 import { isDisabled } from '@/lib/chat/killswitch'
 import { DEFAULT_CHAT_MODEL, DEFAULT_CHAT_PROVIDER, getChatProvider } from '@/lib/chat/provider'
 import { checkRateLimit } from '@/lib/chat/ratelimit'
+import { redactContactInfo } from '@/lib/chat/lead'
 import { MAX_PAYLOAD_BYTES, parseChatRequest } from '@/lib/chat/validation'
 import { site } from '@/lib/site'
 
@@ -173,8 +174,17 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
     messages.push(...parsed.data.messages)
 
+    // Redact contact details from the conversation before it reaches the AI
+    // provider. The visitor's phone/email is only needed for the WhatsApp
+    // hand-off, never for the model. System prompts are left untouched.
+    const sanitizedMessages: ChatMessage[] = messages.map((message) =>
+      message.role === 'system'
+        ? message
+        : { ...message, content: redactContactInfo(message.content) },
+    )
+
     const reply = (
-      await provider.complete(messages, {
+      await provider.complete(sanitizedMessages, {
         sessionId: parsed.data.sessionId,
         signal: AbortSignal.timeout(PROVIDER_TIMEOUT_MS),
       })

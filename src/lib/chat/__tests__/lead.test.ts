@@ -4,6 +4,7 @@ import {
   buildWhatsAppLink,
   detectContactInfo,
   extractNameFromMessage,
+  redactContactInfo,
   resolveLeadMethod,
   shouldDetectContact,
   validateLead,
@@ -138,6 +139,53 @@ describe('buildLeadContext', () => {
     expect(context).toContain('Asesor: ')
     expect(context).toContain('…')
     expect(context.length).toBeLessThan(longReply.length + 100)
+  })
+
+  it('redacts contact details from the context but keeps the lead contact', () => {
+    const lead = { name: 'Ana', contact: '3001234567', method: 'whatsapp' as const }
+    const messages: ChatMessage[] = [
+      { role: 'user', content: 'Mi número es 3001234567 y mi correo ana@example.com' },
+    ]
+
+    const context = buildLeadContext(lead, messages)
+    expect(context).toContain('3001234567')
+    expect(context).not.toContain('ana@example.com')
+    expect(context).toContain('[redactado]')
+  })
+})
+
+describe('redactContactInfo', () => {
+  it('redacts emails and phone numbers', () => {
+    expect(redactContactInfo('Escríbeme a ana@example.com o al 300 123 4567')).toBe(
+      'Escríbeme a [redactado] o al [redactado]',
+    )
+  })
+
+  it('preserves short quantities that are not phone-like', () => {
+    expect(redactContactInfo('Tengo 300 dólares y 5 pedidos')).toBe('Tengo 300 dólares y 5 pedidos')
+  })
+
+  it('preserves currency amounts', () => {
+    expect(redactContactInfo('El presupuesto es $2.800.000 o $4500')).toBe(
+      'El presupuesto es $2.800.000 o $4500',
+    )
+  })
+
+  it('preserves ISO dates', () => {
+    expect(redactContactInfo('La reunión es el 2026-11-13')).toBe('La reunión es el 2026-11-13')
+  })
+
+  it('preserves bare digit runs that are not phone-like', () => {
+    expect(redactContactInfo('Son 12345678 pesos')).toBe('Son 12345678 pesos')
+  })
+
+  it('redacts phone numbers with parentheses and country code', () => {
+    expect(redactContactInfo('Llama a +57 (311) 360 9710')).toBe('Llama a [redactado]')
+    expect(redactContactInfo('Llama a (311) 360 9710')).toBe('Llama a [redactado]')
+  })
+
+  it('handles empty text', () => {
+    expect(redactContactInfo('')).toBe('')
   })
 })
 

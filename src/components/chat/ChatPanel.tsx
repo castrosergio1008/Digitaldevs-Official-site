@@ -24,10 +24,13 @@ type ChatPanelProps = {
   leadLink: string | null
   error: ChatError | null
   leadFormOpen: boolean
+  pendingHandoff: LeadPayload | null
   onSend: (text: string) => void
   onQuickReply: (reply: QuickReply) => void
   onSubmitLead: (lead: LeadPayload) => void
   onDismissLeadForm: () => void
+  onConfirmHandoff: () => void
+  onCancelHandoff: () => void
   onClear: () => void
   onClose: () => void
 }
@@ -46,20 +49,30 @@ export default function ChatPanel({
   leadLink,
   error,
   leadFormOpen,
+  pendingHandoff,
   onSend,
   onQuickReply,
   onSubmitLead,
   onDismissLeadForm,
+  onConfirmHandoff,
+  onCancelHandoff,
   onClear,
   onClose,
 }: ChatPanelProps) {
   const panelRef = useRef<HTMLDivElement>(null)
+  const confirmButtonRef = useRef<HTMLButtonElement | null>(null)
 
   // Move focus into the conversation as soon as the dialog opens.
   useEffect(() => {
     const input = panelRef.current?.querySelector<HTMLElement>('[data-chat-input]')
     input?.focus()
   }, [])
+
+  // Focus the confirmation card when it appears so keyboard and screen-reader
+  // users know a decision is required.
+  useEffect(() => {
+    if (pendingHandoff) confirmButtonRef.current?.focus()
+  }, [pendingHandoff])
 
   // Focus trap + Escape to close, installed on the document so it also works
   // when focus somehow lands outside the panel.
@@ -164,6 +177,37 @@ export default function ChatPanel({
 
       <MessageList messages={messages} typing={typing} />
 
+      {pendingHandoff && (
+        <div
+          role="alert"
+          className="mx-4 mb-3 rounded-xl border border-primary/30 bg-primary/10 px-3 py-2.5 text-xs leading-relaxed text-fg"
+        >
+          <p className="font-semibold">¿Continuar a WhatsApp?</p>
+          <p className="mt-1 text-muted">
+            Voy a abrir WhatsApp con un mensaje que incluye tu nombre, contacto y el contexto de
+            esta conversación.
+          </p>
+          <div className="mt-2 flex gap-2">
+            <button
+              type="button"
+              onClick={onCancelHandoff}
+              className="rounded-lg border border-edge px-3 py-1.5 font-medium text-muted transition-colors hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+            >
+              Cancelar
+            </button>
+            <button
+              ref={confirmButtonRef}
+              type="button"
+              onClick={onConfirmHandoff}
+              className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-cta px-3 py-1.5 font-semibold text-white transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+            >
+              <MessageCircle className="h-3.5 w-3.5" aria-hidden="true" />
+              Sí, continuar
+            </button>
+          </div>
+        </div>
+      )}
+
       <QuickReplies disabled={typing} onSelect={onQuickReply} />
 
       {leadFormOpen && !lead && (
@@ -196,7 +240,8 @@ export default function ChatPanel({
       )}
 
       <p className="px-4 pb-2 text-center text-[11px] leading-relaxed text-muted">
-        Esta conversación es procesada por IA. No escribas datos sensibles.
+        Esta conversación es procesada por IA. Tu nombre y contacto se usan solo para responderte
+        por WhatsApp. No escribas datos sensibles.
       </p>
 
       <ChatInput disabled={typing} onSend={onSend} />

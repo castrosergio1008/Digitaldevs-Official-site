@@ -441,6 +441,29 @@ describe('POST /api/chat', () => {
     expect(serialized).not.toContain('Ana Pérez')
   })
 
+  it('redacts contact details from free-text messages before the provider', async () => {
+    process.env.CHAT_ENABLED = 'true'
+    process.env.CHAT_PROVIDER = 'mock'
+
+    const provider = getChatProvider()
+    const completeSpy = vi.spyOn(provider, 'complete').mockResolvedValue('respuesta')
+
+    await POST(
+      makeRequest({
+        ...validBody,
+        messages: [
+          { role: 'user', content: 'Mi número es 3001234567 y mi correo ana@example.com' },
+        ],
+      }),
+    )
+
+    const messages = completeSpy.mock.calls[0]?.[0] ?? []
+    const serialized = JSON.stringify(messages)
+    expect(serialized).not.toContain('3001234567')
+    expect(serialized).not.toContain('ana@example.com')
+    expect(serialized).toContain('[redactado]')
+  })
+
   it('returns 502 when the provider fails', async () => {
     process.env.CHAT_ENABLED = 'true'
     process.env.CHAT_PROVIDER = 'opencode-go'
