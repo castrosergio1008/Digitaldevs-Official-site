@@ -889,7 +889,7 @@ propio), `src/lib/chat/killswitch.ts` (`isEnabled` con default), `src/lib/chat/l
 | `WHATSAPP_PHONE_NUMBER_ID` | — | ID del número de WhatsApp Business. |
 | `WHATSAPP_NOTIFY_NUMBER` | — | Destinatario en formato E.164 (ej. `573113609710`). |
 | `WHATSAPP_TEMPLATE_NAME` | — | Nombre de la plantilla aprobada. |
-| `WHATSAPP_TEMPLATE_LANGUAGE` | `es` | Código de idioma de la plantilla. |
+| `WHATSAPP_TEMPLATE_LANGUAGE` | `es_CO` | Código de idioma de la plantilla (SPANISH COL). |
 | `WHATSAPP_API_VERSION` | `v21.0` | Versión de la Graph API. |
 
 **Prioridad del canal de email:** Resend (si `RESEND_API_KEY` está presente) >

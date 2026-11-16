@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import {
   CompositeNotifier,
+  DEFAULT_WHATSAPP_TEMPLATE_LANGUAGE,
   GmailNotifier,
   NullNotifier,
   ResendNotifier,
@@ -138,7 +139,7 @@ describe('WhatsAppNotifier', () => {
       'phone-id',
       '573113609710',
       'new_lead',
-      'es',
+      DEFAULT_WHATSAPP_TEMPLATE_LANGUAGE,
       'v21.0',
       fetchMock,
     )
@@ -153,8 +154,13 @@ describe('WhatsAppNotifier', () => {
     const body = JSON.parse(String(init.body)) as Record<string, unknown>
     expect(body.messaging_product).toBe('whatsapp')
     expect(body.to).toBe('573113609710')
-    const template = body.template as { name: string; components: { parameters: { text: string }[] }[] }
+    const template = body.template as {
+      name: string
+      language: { code: string }
+      components: { parameters: { text: string }[] }[]
+    }
     expect(template.name).toBe('new_lead')
+    expect(template.language.code).toBe('es_CO')
     expect(template.components[0].parameters.map((parameter) => parameter.text)).toEqual([
       'Ana Pérez',
       '3001234567',
@@ -162,10 +168,73 @@ describe('WhatsAppNotifier', () => {
     ])
   })
 
-  it('throws on a non-OK response', async () => {
+  it('defaults the template language to the approved Colombian Spanish', () => {
+    expect(DEFAULT_WHATSAPP_TEMPLATE_LANGUAGE).toBe('es_CO')
+  })
+
+  it('throws with a non-PII diagnostic on a non-OK response', async () => {
+    const body = JSON.stringify({
+      error: {
+        message: 'Recipient +57 311 360 9710 (ana@example.com) is not allowed',
+        type: 'OAuthException',
+        code: 100,
+        error_subcode: 2590001,
+        error_data: { details: '573113609710' },
+        error_user_msg: 'token-super-secreto',
+      },
+    })
+    const fetchMock = vi.fn(async () => new Response(body, { status: 400 }))
+    const notifier = new WhatsAppNotifier('token', 'phone', 'to', 'template', 'es_CO', 'v21.0', fetchMock)
+
+    const error = await notifier.notify(makeLead()).then(
+      () => null,
+      (caught: unknown) => caught as Error,
+    )
+
+    expect(error?.message).toBe(
+      'WhatsApp responded with status 400: OAuthException | 100 | 2590001 | Recipient [redactado] [redactado] is not allowed',
+    )
+    expect(error?.message).not.toContain('573113609710')
+    expect(error?.message).not.toContain('token-super-secreto')
+  })
+
+  it('redacts a phone number split by control characters', async () => {
+    const body = JSON.stringify({ error: { message: 'Recipient 311\u00003609710 is not allowed' } })
+    const fetchMock = vi.fn(async () => new Response(body, { status: 400 }))
+    const notifier = new WhatsAppNotifier('token', 'phone', 'to', 'template', 'es_CO', 'v21.0', fetchMock)
+
+    const error = await notifier.notify(makeLead()).then(
+      () => null,
+      (caught: unknown) => caught as Error,
+    )
+
+    expect(error?.message).toBe(
+      'WhatsApp responded with status 400: Recipient [redactado] is not allowed',
+    )
+    expect(error?.message).not.toContain('3609710')
+  })
+
+  it('truncates an overlong diagnostic', async () => {
+    const body = JSON.stringify({ error: { type: 'OAuthException', code: 100, message: 'x'.repeat(500) } })
+    const fetchMock = vi.fn(async () => new Response(body, { status: 400 }))
+    const notifier = new WhatsAppNotifier('token', 'phone', 'to', 'template', 'es_CO', 'v21.0', fetchMock)
+
+    const error = await notifier.notify(makeLead()).then(
+      () => null,
+      (caught: unknown) => caught as Error,
+    )
+
+    expect(error?.message).toBe(
+      `WhatsApp responded with status 400: OAuthException | 100 | ${'x'.repeat(177)}...`,
+    )
+  })
+
+  it('reports an unparseable error body without throwing a parse error', async () => {
     const fetchMock = vi.fn(async () => new Response('nope', { status: 400 }))
-    const notifier = new WhatsAppNotifier('token', 'phone', 'to', 'template', 'es', 'v21.0', fetchMock)
-    await expect(notifier.notify(makeLead())).rejects.toThrow('WhatsApp responded with status 400')
+    const notifier = new WhatsAppNotifier('token', 'phone', 'to', 'template', 'es_CO', 'v21.0', fetchMock)
+    await expect(notifier.notify(makeLead())).rejects.toThrow(
+      'WhatsApp responded with status 400: unparseable error body',
+    )
   })
 })
 

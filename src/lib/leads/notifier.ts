@@ -1,4 +1,5 @@
 import { site } from '@/lib/site'
+import { redactContactInfo } from '@/lib/chat/lead'
 import type { LeadRecord, LeadSource } from './stores'
 
 /** Outcome of a notification attempt across the configured channels. */
@@ -32,7 +33,7 @@ export const GMAIL_SMTP_PORT = 465
 /** Outgoing notification calls must never hang the request. */
 export const NOTIFY_TIMEOUT_MS = 10_000
 export const DEFAULT_WHATSAPP_API_VERSION = 'v21.0'
-export const DEFAULT_WHATSAPP_TEMPLATE_LANGUAGE = 'es'
+export const DEFAULT_WHATSAPP_TEMPLATE_LANGUAGE = 'es_CO'
 /** Approved template name in the client's Meta Business account. */
 export const DEFAULT_WHATSAPP_TEMPLATE_NAME = 'digitaldevs'
 
@@ -193,12 +194,58 @@ export class WhatsAppNotifier implements LeadNotifier {
     })
 
     if (!response.ok) {
-      await response.text().catch(() => '')
-      throw new Error(`WhatsApp responded with status ${response.status}`)
+      throw new Error(
+        `WhatsApp responded with status ${response.status}: ${await describeMetaError(response)}`,
+      )
     }
 
     return { emailed: false, whatsapped: true }
   }
+}
+
+/** Upper bound for the assembled diagnostic, to keep logs injection-safe. */
+const DIAGNOSTIC_LIMIT = 200
+
+/**
+ * Builds a non-PII diagnostic string from a Meta error response. Only the
+ * operational fields (`type`, `code`, `error_subcode`, `message`) are read:
+ * `error_data`, `error_user_msg` and `fbtrace_id` are dropped because they can
+ * echo the recipient phone number or internal details. The free-form `message`
+ * is passed through the shared `redactContactInfo` and truncated so a formatted
+ * phone number or email cannot leak into the logs.
+ */
+async function describeMetaError(response: Response): Promise<string> {
+  const raw = await response.text().catch(() => '')
+  if (!raw.trim()) return 'empty body'
+
+  let parsed: { error?: { type?: unknown; code?: unknown; error_subcode?: unknown; message?: unknown } }
+  try {
+    parsed = JSON.parse(raw)
+  } catch {
+    return 'unparseable error body'
+  }
+
+  const parts = [
+    parsed.error?.type,
+    parsed.error?.code,
+    parsed.error?.error_subcode,
+    parsed.error?.message,
+  ]
+    .filter((part): part is string | number => typeof part === 'string' || typeof part === 'number')
+    .map((part) => sanitizeDiagnosticPart(String(part)))
+
+  if (parts.length === 0) return 'unknown error'
+  const diagnostic = parts.join(' | ')
+  return diagnostic.length > DIAGNOSTIC_LIMIT ? `${diagnostic.slice(0, DIAGNOSTIC_LIMIT)}...` : diagnostic
+}
+
+/**
+ * Redacts contact info from one diagnostic part. Control characters are removed
+ * first so they cannot break the phone pattern and reassemble a number that
+ * would escape redaction.
+ */
+function sanitizeDiagnosticPart(part: string): string {
+  return redactContactInfo(part.replace(/[\u0000-\u001f\u007f]+/g, ' ')).trim()
 }
 
 /**
