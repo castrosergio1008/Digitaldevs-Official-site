@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   buildLeadContext,
+  buildLeadSummary,
   buildWhatsAppLink,
   detectContactInfo,
   extractNameFromMessage,
@@ -11,6 +12,7 @@ import {
   validateLeadContact,
   validateLeadName,
 } from '../lead'
+import { DEFAULT_GREETING, DETECTED_LEAD_MESSAGE } from '../copy'
 import type { ChatMessage } from '../types'
 
 describe('resolveLeadMethod', () => {
@@ -103,6 +105,16 @@ describe('buildLeadContext', () => {
     expect(context).not.toContain('Contexto:')
   })
 
+  it('filters the detected-lead confirmation from the summary', () => {
+    const messages: ChatMessage[] = [
+      { role: 'user', content: 'Mi número es 3001234567' },
+      { role: 'assistant', content: DETECTED_LEAD_MESSAGE },
+    ]
+
+    const summary = buildLeadSummary(messages)
+    expect(summary).not.toContain('Encontré tus datos')
+  })
+
   it('adds the assistant reply as context when there is no structured summary', () => {
     const lead = { name: 'Ana', contact: '3001234567', method: 'whatsapp' as const }
     const messages: ChatMessage[] = [
@@ -118,7 +130,7 @@ describe('buildLeadContext', () => {
   it('skips the greeting and keeps only the user message', () => {
     const lead = { name: 'Ana', contact: '3001234567', method: 'whatsapp' as const }
     const messages: ChatMessage[] = [
-      { role: 'assistant', content: '¡Hola! Soy el asistente virtual de Digital-devs. ¿En qué puedo ayudar hoy?' },
+      { role: 'assistant', content: DEFAULT_GREETING },
       { role: 'user', content: 'Quiero información' },
     ]
 

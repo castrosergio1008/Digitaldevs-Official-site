@@ -251,8 +251,9 @@ src/
   cliente. Nota de consentimiento.
 - **`ChatInput`:** campo de texto + botón enviar. Enter envía, Shift+Enter salto de línea.
   Deshabilitado mientras el bot escribe.
-- **`QuickReplies`:** chips con "¿Qué servicios ofrecen?", "¿Cuánto cuesta?", "Quiero que me
-  contacten", "Hablar con un asesor".
+- **`QuickReplies`:** chips "Tengo pedidos que se me pierden", "Quiero una cotización para mi
+  negocio", "Agendar una llamada de 15 minutos" y "Que un asesor me contacte". Los dos últimos abren
+  el formulario de lead (el de asesor ya no abre WhatsApp directo).
 - **`TypingIndicator`:** tres puntos con animación CSS `motion-safe:` (desactivada con
   `prefers-reduced-motion`).
 
@@ -457,8 +458,9 @@ cliente descarta los mensajes más antiguos (manteniendo el contexto reciente) y
 
 **Flujo:**
 
-1. El visitante hace clic en el chip **"Quiero que me contacten"** o el bot lo Detecta en la
-   conversación y sugiere dejar sus datos.
+1. El visitante hace clic en el chip **"Que un asesor me contacte"** o **"Agendar una llamada de
+   15 minutos"**, o en el CTA **"Sí, quiero que me contacten"** que aparece cuando el bot cierra con
+   un `Resumen:`, o el bot detecta sus datos en el texto y pide confirmación.
 2. Se muestra el `LeadCaptureForm` dentro del panel: **Nombre** + **WhatsApp o email**.
 3. Al enviar, el cliente:
    - Valida los campos (nombre mínimo 2 chars, contacto mínimo 5 chars).
@@ -480,11 +482,13 @@ El `resumen` es el último mensaje del visitante (o un texto fijo si no hay conv
 Hola Digital-devs! Soy Ana Pérez. Mi WhatsApp es 3001234567. Quiero una tienda en línea para vender ropa.
 ```
 
-**Hand off humano directo:** el chip "Hablar con un asesor" abre WhatsApp con un mensaje genérico
-(`site.whatsappLink`), sin necesidad de pasar por el formulario.
+**Hand off humano directo:** ya no existe. El chip de asesor y el CTA post-resumen pasan por el
+`LeadCaptureForm` (con consentimiento) antes de abrir WhatsApp. El hand-off por texto detectado
+(`¿Continuar a WhatsApp?`) se mantiene con confirmación explícita.
 
-**Privacidad del lead:** el contacto **no** se envía al modelo de IA (no lo necesita). Solo se usa
-en el cliente para construir el enlace de WhatsApp. El servidor no lo persiste.
+**Privacidad del lead:** el contacto **no** se envía al modelo de IA (no lo necesita). Se usa en
+el cliente para construir el enlace de WhatsApp y, si `LEAD_PERSISTENCE_ENABLED=true`, el servidor
+lo persiste en Supabase para gestionar la solicitud (ver política de privacidad).
 
 ### 4.7 Capa de abstracción del proveedor (intercambiabilidad)
 
@@ -768,7 +772,7 @@ revisa el código; `forge-sentinel` aprueba la seguridad y privacidad antes de p
   3. Escape cierra el panel y devuelve el foco al botón.
   4. Enviar un mensaje → aparece la respuesta del mock en la lista.
   5. El indicador de escritura aparece mientras se "genera" la respuesta (mock con retardo).
-  6. El chip "Quiero que me contacten" muestra el formulario de lead.
+  6. El chip "Que un asesor me contacte" y el CTA post-resumen muestran el formulario de lead.
   7. Al enviar el lead, se abre WhatsApp con el nombre y el contacto en el mensaje.
   8. "Limpiar conversación" borra el historial y reinicia la sesión.
   9. El chat persiste al navegar entre páginas (localStorage).
@@ -1026,7 +1030,7 @@ diseño original; los cambios realizados fueron:
 
 - **Chips rediseñados** (`src/components/chat/QuickReplies.tsx`): "Tengo pedidos que se me
   pierden", "Quiero una cotización para mi negocio", "Agendar una llamada de 15 minutos",
-  "Hablar con un asesor". Se eliminaron "¿Qué servicios ofrecen?" y "¿Cuánto cuesta?" (anclaban
+  "Que un asesor me contacte". Se eliminaron "¿Qué servicios ofrecen?" y "¿Cuánto cuesta?" (anclaban
   precio sin capturar lead).
 - **Contexto de WhatsApp enriquecido** (`src/lib/chat/lead.ts`): `buildLeadContext` ahora usa el
   "Resumen:" estructurado del bot o el último mensaje del asesor + el del usuario, en lugar de solo
@@ -1040,3 +1044,30 @@ diseño original; los cambios realizados fueron:
 - **PII eliminada del código** (`src/app/api/chat/route.ts`): se quitó el saludo especial
   hardcodeado para una persona concreta. Ver la revisión de `forge-sentinel` sobre el historial
   público de git.
+
+---
+
+## Actualización 2026-11-16 — Quick wins de conversión y UX
+
+Aplicado el 2026-11-16 tras las auditorías de `forge-marketing` (ATLAS) y `forge-frontend`:
+
+- **Chip de asesor con captura** (`src/components/chat/QuickReplies.tsx`, `ChatWidget.tsx`): el chip
+  "Que un asesor me contacte" abre el `LeadCaptureForm` (con consentimiento) en lugar de WhatsApp
+  directo. Se garantiza al menos un turno de usuario para el contexto del lead.
+- **CTA contextual post-resumen** (`src/lib/chat/diagnosis.ts`, `ChatPanel.tsx`, `ChatWidget.tsx`):
+  cuando el bot cierra con `Resumen:`, aparece el botón "Sí, quiero que me contacten", que abre el
+  formulario. Se desactiva al capturar lead, cerrar panel, limpiar o confirmar hand-off.
+- **Saludo por ruta** (`src/lib/chat/greeting.ts`, `src/lib/chat/copy.ts`): saludo distinto para `/`,
+  `/servicios`, `/servicios/<slug>` y default, calculado tras la hidratación.
+- **Post-lead** (`ChatPanel.tsx`): mensaje honesto ("Ya recibí tus datos. Te escribimos muy pronto
+  para coordinar el siguiente paso.") y chips ocultos tras capturar.
+- **Contraste AA en CTAs** (`src/app/globals.css`): token `--cta-fg` (`#1a0b00`) y utilidad
+  `text-cta-fg`; los CTAs del chat quedan ≥4.5:1 en ambos temas (6.55:1 / 5.65:1 sin hover).
+- **Tooltip accesible** (`FloatingButton.tsx`): decorativo (`aria-hidden`), sin auto-play ni
+  `aria-live`; aparece en hover/focus y se cierra en mouseleave/blur/Escape.
+- **Copy centralizado** (`src/lib/chat/copy.ts`): textos de ATLAS; `isGreetingMessage` filtra todos
+  los saludos (incluido el legacy) para no colarlos en el contexto de WhatsApp.
+- **Formulario móvil** (`LeadCaptureForm.tsx`): `inputMode`/`autoComplete` dinámicos.
+
+Verificado: `typecheck`, `lint`, tests unitarios, `build` y e2e en verde. LGTM de
+`forge-reviewer` y OK de `forge-sentinel`.

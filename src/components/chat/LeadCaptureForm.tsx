@@ -25,6 +25,19 @@ export default function LeadCaptureForm({ disabled, onSubmitLead, onCancel }: Le
   const [contact, setContact] = useState('')
   const [errors, setErrors] = useState<{ name?: string; contact?: string }>({})
 
+  // Mobile keyboards: match the input mode and autofill to what the visitor is
+  // actually typing. Validation is unchanged.
+  const trimmedContact = contact.trim()
+  const looksLikeEmail = trimmedContact.includes('@')
+  const looksLikePhone =
+    !looksLikeEmail && /\d/.test(trimmedContact) && /^[+()\-.\s\d]+$/.test(trimmedContact)
+  const inputMode: 'email' | 'tel' | 'text' = looksLikeEmail
+    ? 'email'
+    : looksLikePhone
+      ? 'tel'
+      : 'text'
+  const autoComplete = looksLikeEmail ? 'email' : looksLikePhone ? 'tel' : 'off'
+
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault()
     const result = validateLead({ name, contact, method: resolveLeadMethod(contact) })
@@ -71,8 +84,8 @@ export default function LeadCaptureForm({ disabled, onSubmitLead, onCancel }: Le
         </label>
         <input
           id="chat-lead-contact"
-          inputMode="text"
-          autoComplete="off"
+          inputMode={inputMode}
+          autoComplete={autoComplete}
           value={contact}
           disabled={disabled}
           onChange={(event) => setContact(event.target.value)}
@@ -110,7 +123,7 @@ export default function LeadCaptureForm({ disabled, onSubmitLead, onCancel }: Le
         <button
           type="submit"
           disabled={disabled}
-          className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-cta px-4 py-2.5 text-sm font-semibold text-white transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-cta px-4 py-2.5 text-sm font-semibold text-cta-fg transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:cursor-not-allowed disabled:opacity-50"
         >
           <Send className="h-4 w-4" aria-hidden="true" />
           Enviar a WhatsApp

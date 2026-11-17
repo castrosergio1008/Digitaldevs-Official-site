@@ -1,4 +1,5 @@
 import type { ChatMessage, ChatProvider, ChatProviderOptions } from '../types'
+import { DEFAULT_GREETING } from '../copy'
 
 /**
  * Deterministic provider for tests and local development. It recognises a few
@@ -15,7 +16,7 @@ export class MockProvider implements ChatProvider {
     const text = lastUserMessage(messages).toLowerCase()
 
     if (/(^|\s)(hola|buenas|buenos dias|buenos días|buenas tardes|buenas noches)\b/.test(text)) {
-      return '¡Hola! Soy el asistente virtual de Digital-devs. ¿En qué te puedo ayudar hoy?'
+      return DEFAULT_GREETING
     }
     if (/(precio|costo|cuanto|cuánto|inversion|inversión|tarifa|valor)/.test(text)) {
       return 'Los precios dependen del alcance: un sitio corporativo o landing se cotiza como proyecto cerrado, y una tienda en línea o aplicación a medida por módulos. ¿Qué tipo de proyecto tienes en mente?'

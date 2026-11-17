@@ -12,6 +12,10 @@
   --primary: #0066ff;
   --accent: #00ccff;
   --cta: #ff6600;
+  /* Dark text on the orange CTA: WCAG AA (>= 4.5:1) in both themes.
+     #1a0b00 on #ff6600/#f05a04 = 6.55:1 / 5.65:1; with hover brightness(1.1)
+     = 6.85:1 / 6.37:1. */
+  --cta-fg: #1a0b00;
   --coral: #ff3366;
   --code: #0a0f2e;
   --glass: rgba(13, 20, 51, 0.66);
@@ -29,6 +33,7 @@
   --primary: #0066ff;
   --accent: #0089c7;
   --cta: #f05a04;
+  --cta-fg: #1a0b00;
   --coral: #e12651;
   --code: #0b1231;
   --glass: rgba(255, 255, 255, 0.78);
@@ -46,6 +51,7 @@
   --color-primary: var(--primary);
   --color-accent: var(--accent);
   --color-cta: var(--cta);
+  --color-cta-fg: var(--cta-fg);
   --color-coral: var(--coral);
   --font-sans: var(--font-inter), Roboto, system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
   --font-mono: var(--font-jetbrains), ui-monospace, SFMono-Regular, Menlo, monospace;

@@ -1,6 +1,8 @@
 'use client'
 
-export type QuickReplyAction = 'message' | 'lead' | 'advisor'
+import { ADVISOR_CHIP_LABEL } from '@/lib/chat/copy'
+
+export type QuickReplyAction = 'message' | 'lead'
 
 export interface QuickReply {
   id: string
@@ -24,7 +26,7 @@ export const QUICK_REPLIES: QuickReply[] = [
     message: 'Quiero una cotización para mi negocio',
   },
   { id: 'schedule', label: 'Agendar una llamada de 15 minutos', action: 'lead' },
-  { id: 'advisor', label: 'Hablar con un asesor', action: 'advisor' },
+  { id: 'advisor', label: ADVISOR_CHIP_LABEL, action: 'lead' },
 ]
 
 type QuickRepliesProps = {

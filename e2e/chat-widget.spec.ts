@@ -10,7 +10,7 @@ const waPayload = (url: string) => decodeURIComponent(url.replace(/\+/g, ' '))
  * Intercepts `/api/chat` so the widget can be exercised without a real AI
  * provider. The short delay keeps the typing indicator observable.
  */
-async function mockChat(page: Page) {
+async function mockChat(page: Page, reply: string = MOCK_REPLY) {
   await page.route('**/api/chat', async (route) => {
     if (route.request().method() !== 'POST') {
       await route.continue()
@@ -21,7 +21,7 @@ async function mockChat(page: Page) {
       status: 200,
       contentType: 'application/json',
       body: JSON.stringify({
-        reply: MOCK_REPLY,
+        reply,
         sessionId: 'e2e-session-id',
         leadCaptured: false,
         provider: 'mock',
@@ -103,6 +103,59 @@ test.describe('chat widget', () => {
     const log = panel.getByRole('log', { name: 'Conversación' })
     await expect(log.getByText('Quiero una cotización para mi negocio')).toBeVisible()
     await expect(log.getByText(MOCK_REPLY)).toBeVisible()
+  })
+
+  test('advisor chip opens the lead form instead of a direct hand-off', async ({ page }) => {
+    await page.goto('/', { waitUntil: 'networkidle' })
+
+    const panel = await openChat(page)
+    await panel.getByRole('button', { name: 'Que un asesor me contacte' }).click()
+
+    const form = panel.getByRole('form', { name: 'Formulario de contacto' })
+    await expect(form).toBeVisible()
+
+    // The chip guarantees a user turn so the lead context is valid.
+    const log = panel.getByRole('log', { name: 'Conversación' })
+    await expect(log.getByText('Que un asesor me contacte')).toBeVisible()
+  })
+
+  test('diagnosis summary reveals a CTA that opens the lead form', async ({ page }) => {
+    await mockChat(page, 'Resumen: pedidos perdidos → Automatización de Procesos ($2.800.000+)')
+    await page.goto('/', { waitUntil: 'networkidle' })
+
+    const panel = await openChat(page)
+    const input = panel.getByRole('textbox', { name: 'Escribe tu mensaje' })
+    await input.fill('Tengo pedidos que se me pierden')
+    await input.press('Enter')
+
+    const cta = panel.getByRole('button', { name: 'Sí, quiero que me contacten' })
+    await expect(cta).toBeVisible()
+    await cta.click()
+
+    await expect(panel.getByRole('form', { name: 'Formulario de contacto' })).toBeVisible()
+  })
+
+  test('capturing a lead hides the quick replies and shows the post-lead message', async ({
+    page,
+  }) => {
+    await mockChat(page)
+    await page.goto('/', { waitUntil: 'networkidle' })
+
+    const panel = await openChat(page)
+    await panel.getByRole('button', { name: 'Agendar una llamada de 15 minutos' }).click()
+
+    const form = panel.getByRole('form', { name: 'Formulario de contacto' })
+    await form.getByLabel('Nombre').fill('Ana Pérez')
+    await form.getByLabel('WhatsApp o email').fill('3001234567')
+
+    const popupPromise = page.waitForEvent('popup', { timeout: 3_000 }).catch(() => null)
+    await form.getByRole('button', { name: 'Enviar a WhatsApp' }).click()
+    await popupPromise
+
+    await expect(
+      panel.getByText('Ya recibí tus datos. Te escribimos muy pronto para coordinar el siguiente paso.'),
+    ).toBeVisible()
+    await expect(panel.getByRole('group', { name: 'Respuestas rápidas' })).toHaveCount(0)
   })
 
   test('lead capture form is available, validates and shows the consent note', async ({ page }) => {
@@ -201,7 +254,7 @@ test.describe('chat widget', () => {
     await panel.getByRole('button', { name: 'Borrar conversación' }).click()
     await expect(log.getByText(uniqueMessage)).toHaveCount(0)
     await expect(log.getByText(MOCK_REPLY)).toHaveCount(0)
-    await expect(log.getByText(/asistente virtual de Digital-devs/)).toBeVisible()
+    await expect(log.getByText(/Hola, soy el asistente/)).toBeVisible()
   })
 
   test('free-text contact detection asks for confirmation instead of auto-opening WhatsApp', async ({
@@ -267,5 +320,45 @@ test.describe('chat widget', () => {
 
     // The confirmation card must be gone.
     await expect(panel.getByText('¿Continuar a WhatsApp?')).toHaveCount(0)
+  })
+
+  test('the post-summary CTA disappears after a lead is captured', async ({ page }) => {
+    await mockChat(page, 'Resumen: pedidos perdidos → Automatización ($2.800.000+)')
+    await page.goto('/', { waitUntil: 'networkidle' })
+
+    const panel = await openChat(page)
+    const input = panel.getByRole('textbox', { name: 'Escribe tu mensaje' })
+    await input.fill('Tengo pedidos que se me pierden')
+    await input.press('Enter')
+
+    const cta = panel.getByRole('button', { name: 'Sí, quiero que me contacten' })
+    await expect(cta).toBeVisible()
+
+    await panel.getByRole('button', { name: 'Agendar una llamada de 15 minutos' }).click()
+    const form = panel.getByRole('form', { name: 'Formulario de contacto' })
+    await form.getByLabel('Nombre').fill('Ana Pérez')
+    await form.getByLabel('WhatsApp o email').fill('3001234567')
+    const popupPromise = page.waitForEvent('popup', { timeout: 3_000 }).catch(() => null)
+    await form.getByRole('button', { name: 'Enviar a WhatsApp' }).click()
+    await popupPromise
+
+    await expect(cta).toHaveCount(0)
+  })
+
+  test('the FAB tooltip is decorative and only appears on hover/focus', async ({ page }) => {
+    await page.goto('/', { waitUntil: 'networkidle' })
+    const fab = page.getByRole('button', { name: 'Abrir chat' })
+    const tooltip = page.locator('.digital-tooltip')
+
+    // No auto-play: it must not appear on its own after the idle delay.
+    await page.waitForTimeout(4_500)
+    await expect(tooltip).toHaveCount(0)
+
+    await fab.hover()
+    await expect(tooltip).toBeVisible()
+    await expect(tooltip).toHaveAttribute('aria-hidden', 'true')
+
+    await page.mouse.move(0, 0)
+    await expect(tooltip).toHaveCount(0)
   })
 })

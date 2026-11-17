@@ -1,6 +1,14 @@
 import { site } from '@/lib/site'
+import { DEFAULT_GREETING, DETECTED_LEAD_MESSAGE, isGreetingMessage } from './copy'
+import { DIAGNOSIS_SUMMARY_PATTERN } from './diagnosis'
 import { EMAIL_PATTERN } from './email'
 import type { ChatMessage, LeadMethod, LeadPayload } from './types'
+
+/**
+ * Shared widget greeting kept as an alias of the centralized copy so existing
+ * imports keep working. New code should import `DEFAULT_GREETING` from copy.
+ */
+export const CHAT_GREETING = DEFAULT_GREETING
 
 export interface LeadDraft {
   name: string
@@ -61,9 +69,6 @@ export function validateLead(draft: LeadDraft): LeadValidationResult {
   }
 }
 
-/** Matches the structured closing summary the bot is instructed to emit. */
-const SUMMARY_PATTERN = /Resumen:\s*([^\n]+)/i
-
 /** Matches email addresses anywhere in a string (global). */
 const EMAIL_GLOBAL_PATTERN = /[^\s@]+@[^\s@]+\.[^\s@]+/g
 
@@ -111,20 +116,11 @@ export function redactContactInfo(text: string): string {
   return working.replace(/\u0000(\d+)\u0000/g, (_, index) => protectedTokens[Number(index)] ?? '')
 }
 
-/**
- * Shared widget greeting. Exported so the chat widget and the lead context
- * builder stay in sync; it carries no diagnostic value.
- */
-export const CHAT_GREETING = '¡Hola! Soy el asistente virtual de Digital-devs. ¿En qué puedo ayudar hoy?'
-
 /** Maximum characters kept from the assistant reply when used as context. */
 const ASSISTANT_CONTEXT_LIMIT = 200
 
 /** Assistant turns that carry no diagnostic value for the WhatsApp hand-off. */
-const NOISE_MESSAGES = [
-  CHAT_GREETING,
-  'Encontré tus datos en tu mensaje. Antes de abrir WhatsApp, confírmame que quieres que continúe.',
-]
+const NOISE_MESSAGES = [DETECTED_LEAD_MESSAGE]
 
 /**
  * Builds the clean diagnostic summary persisted with a lead and shown in the
@@ -143,9 +139,11 @@ export function buildLeadSummary(messages: ChatMessage[]): string {
 
   const summary = redactContactInfo(lastUserMessage?.content.trim() || 'Quiero más información.')
   const rawAssistantText = lastAssistantMessage?.content.trim() ?? ''
-  const assistantText = NOISE_MESSAGES.includes(rawAssistantText) ? '' : redactContactInfo(rawAssistantText)
+  const isNoise =
+    isGreetingMessage(rawAssistantText) || NOISE_MESSAGES.includes(rawAssistantText)
+  const assistantText = isNoise ? '' : redactContactInfo(rawAssistantText)
 
-  const structuredSummary = assistantText.match(SUMMARY_PATTERN)?.[1]?.trim()
+  const structuredSummary = assistantText.match(DIAGNOSIS_SUMMARY_PATTERN)?.[1]?.trim()
   if (structuredSummary) {
     return `Resumen: ${structuredSummary}`
   }

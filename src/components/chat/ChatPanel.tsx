@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react'
 import { AlertCircle, CheckCircle2, MessageCircle, Trash2, X } from 'lucide-react'
 import type { ChatMessage, LeadPayload } from '@/lib/chat/types'
+import { LEAD_CTA_LABEL, POST_LEAD_MESSAGE } from '@/lib/chat/copy'
 import { site } from '@/lib/site'
 import MessageList from './MessageList'
 import QuickReplies, { type QuickReply } from './QuickReplies'
@@ -24,8 +25,11 @@ type ChatPanelProps = {
   leadLink: string | null
   error: ChatError | null
   leadFormOpen: boolean
+  /** True when the last bot reply was the closing diagnosis summary. */
+  showLeadCta: boolean
   pendingHandoff: LeadPayload | null
   onSend: (text: string) => void
+  onOpenLeadForm: () => void
   onQuickReply: (reply: QuickReply) => void
   onSubmitLead: (lead: LeadPayload) => void
   onDismissLeadForm: () => void
@@ -51,8 +55,10 @@ export default function ChatPanel({
   leadLink,
   error,
   leadFormOpen,
+  showLeadCta,
   pendingHandoff,
   onSend,
+  onOpenLeadForm,
   onQuickReply,
   onSubmitLead,
   onDismissLeadForm,
@@ -181,6 +187,19 @@ export default function ChatPanel({
 
       <MessageList messages={messages} typing={typing} />
 
+      {showLeadCta && !lead && (
+        <div className="px-4 pb-2">
+          <button
+            type="button"
+            onClick={onOpenLeadForm}
+            className="inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-cta px-3 py-1.5 text-xs font-semibold text-cta-fg transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+          >
+            <MessageCircle className="h-3.5 w-3.5" aria-hidden="true" />
+            {LEAD_CTA_LABEL}
+          </button>
+        </div>
+      )}
+
       {pendingHandoff && (
         <div
           role="alert"
@@ -203,7 +222,7 @@ export default function ChatPanel({
               ref={confirmButtonRef}
               type="button"
               onClick={onConfirmHandoff}
-              className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-cta px-3 py-1.5 font-semibold text-white transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+              className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-cta px-3 py-1.5 font-semibold text-cta-fg transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
             >
               <MessageCircle className="h-3.5 w-3.5" aria-hidden="true" />
               Sí, continuar
@@ -212,7 +231,7 @@ export default function ChatPanel({
         </div>
       )}
 
-      <QuickReplies disabled={typing} onSelect={onQuickReply} />
+      {!lead && <QuickReplies disabled={typing} onSelect={onQuickReply} />}
 
       {leadFormOpen && !lead && (
         <LeadCaptureForm
@@ -228,15 +247,13 @@ export default function ChatPanel({
             <CheckCircle2 className="h-4 w-4 text-emerald-400" aria-hidden="true" />
             ¡Gracias, {lead.name}!
           </p>
-          <p className="mt-1 text-muted">
-            Tus datos se registraron correctamente. Continúa la conversación en WhatsApp.
-          </p>
+          <p className="mt-1 text-muted">{POST_LEAD_MESSAGE}</p>
           <a
             href={leadLink}
             target="_blank"
             rel="noreferrer"
             onClick={() => onWhatsAppClick?.('form')}
-            className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-cta px-3 py-2 font-semibold text-white transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+            className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-cta px-3 py-2 font-semibold text-cta-fg transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
           >
             <MessageCircle className="h-3.5 w-3.5" aria-hidden="true" />
             Continuar en WhatsApp

@@ -2,12 +2,13 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { ChatMessage, ChatResponse, LeadPayload } from '@/lib/chat/types'
-import { site } from '@/lib/site'
+import { greetingForPath } from '@/lib/chat/greeting'
+import { isDiagnosisSummary } from '@/lib/chat/diagnosis'
+import { DETECTED_LEAD_MESSAGE } from '@/lib/chat/copy'
 import {
   buildLeadContext,
   buildLeadSummary,
   buildWhatsAppLink,
-  CHAT_GREETING,
   detectContactInfo,
   extractNameFromMessage,
   shouldDetectContact,
@@ -25,9 +26,15 @@ import FloatingButton from './FloatingButton'
 import ChatPanel, { type ChatError } from './ChatPanel'
 import type { QuickReply } from './QuickReplies'
 
-const GREETING: ChatMessage = {
-  role: 'assistant',
-  content: CHAT_GREETING,
+/**
+ * Builds the initial assistant turn for the current route. It reads
+ * `window.location.pathname` only on the client, after hydration.
+ */
+function greetingMessage(): ChatMessage {
+  return {
+    role: 'assistant',
+    content: greetingForPath(typeof window === 'undefined' ? '' : window.location.pathname),
+  }
 }
 
 /** Maps an `/api/chat` failure to a friendly, user-facing message. */
@@ -64,11 +71,12 @@ async function readChatError(response: Response): Promise<ChatError> {
  */
 export default function ChatWidget() {
   const [open, setOpen] = useState(false)
-  const [messages, setMessages] = useState<ChatMessage[]>([GREETING])
+  const [messages, setMessages] = useState<ChatMessage[]>(() => [greetingMessage()])
   const [sessionId, setSessionId] = useState('')
   const [lead, setLead] = useState<LeadPayload | null>(null)
   const [typing, setTyping] = useState(false)
   const [leadFormOpen, setLeadFormOpen] = useState(false)
+  const [showLeadCta, setShowLeadCta] = useState(false)
   const [pendingHandoff, setPendingHandoff] = useState<LeadPayload | null>(null)
   const [error, setError] = useState<ChatError | null>(null)
   const [hydrated, setHydrated] = useState(false)
@@ -77,12 +85,14 @@ export default function ChatWidget() {
   // Load the stored conversation only after mount, so the server markup and the
   // first client render stay free of localStorage reads.
   useEffect(() => {
+    const greeting = greetingMessage()
     const stored = loadChatSession()
     if (stored) {
-      setMessages(stored.messages.length > 0 ? stored.messages : [GREETING])
+      setMessages(stored.messages.length > 0 ? stored.messages : [greeting])
       setSessionId(stored.id)
       if (stored.lead) setLead(stored.lead)
     } else {
+      setMessages([greeting])
       setSessionId(createSessionId())
     }
     setHydrated(true)
@@ -102,6 +112,7 @@ export default function ChatWidget() {
 
   const close = useCallback(() => {
     setOpen(false)
+    setShowLeadCta(false)
     // Return focus to the launcher once the panel has unmounted.
     window.setTimeout(() => buttonRef.current?.focus(), 0)
   }, [])
@@ -134,6 +145,8 @@ export default function ChatWidget() {
       setMessages(nextMessages)
       setTyping(true)
       setError(null)
+      // A new turn invalidates a previous closing CTA until a new summary arrives.
+      setShowLeadCta(false)
 
       // Detect contact info in the user's message. When found and no lead has
       // been captured yet, ask for explicit confirmation before opening
@@ -168,7 +181,9 @@ export default function ChatWidget() {
           if (data.sessionId) setSessionId(data.sessionId)
           const withReply = [...nextMessages, { role: 'assistant' as const, content: data.reply }]
           // The bot signals the end of the diagnosis with a structured summary.
-          if (/Resumen:/i.test(data.reply)) {
+          const isSummary = isDiagnosisSummary(data.reply)
+          setShowLeadCta(isSummary)
+          if (isSummary) {
             trackEvent(
               'diagnosis_completed',
               {
@@ -179,11 +194,7 @@ export default function ChatWidget() {
             )
           }
           if (detectedLead) {
-            withReply.push({
-              role: 'assistant',
-              content:
-                'Encontré tus datos en tu mensaje. Antes de abrir WhatsApp, confírmame que quieres que continúe.',
-            })
+            withReply.push({ role: 'assistant', content: DETECTED_LEAD_MESSAGE })
           }
           setMessages(trimMessages(withReply))
         } else {
@@ -203,6 +214,7 @@ export default function ChatWidget() {
     const detected = pendingHandoff
     setLead(detected)
     setPendingHandoff(null)
+    setShowLeadCta(false)
     window.open(
       buildWhatsAppLink(detected.name, buildLeadContext(detected, messages)),
       '_blank',
@@ -242,17 +254,14 @@ export default function ChatWidget() {
         setMessages(trimMessages([...messages, { role: 'user', content: reply.label }]))
       }
       setLeadFormOpen(true)
-      return
     }
-    // Direct human hand-off without the form.
-    window.open(site.whatsappLink, '_blank', 'noopener')
-    trackEvent('whatsapp_clicked', { source: 'direct' }, sessionId)
   }
 
   const submitLead = (payload: LeadPayload) => {
     setLead(payload)
     setLeadFormOpen(false)
     setPendingHandoff(null)
+    setShowLeadCta(false)
     setError(null)
 
     // Open WhatsApp while the submit user activation is still valid: browsers
@@ -282,9 +291,10 @@ export default function ChatWidget() {
   const clearConversation = () => {
     clearChatSession()
     setSessionId(createSessionId())
-    setMessages([GREETING])
+    setMessages([greetingMessage()])
     setLead(null)
     setLeadFormOpen(false)
+    setShowLeadCta(false)
     setPendingHandoff(null)
     setError(null)
     setTyping(false)
@@ -303,9 +313,11 @@ export default function ChatWidget() {
           leadLink={leadLink}
           error={error}
           leadFormOpen={leadFormOpen}
+          showLeadCta={showLeadCta}
           pendingHandoff={pendingHandoff}
           onSend={(text) => void sendMessage(text)}
           onQuickReply={handleQuickReply}
+          onOpenLeadForm={() => setLeadFormOpen(true)}
           onSubmitLead={(payload) => void submitLead(payload)}
           onDismissLeadForm={() => setLeadFormOpen(false)}
           onConfirmHandoff={confirmHandoff}
